@@ -37,12 +37,12 @@
 
             </div>
          {% if 'username' in session %}
-            <p style="color: #a7b9d3;">Hello, {{ session['username'] }}!</p>
+            <p style="color: #a7b9d3;width:100px;margin-top:18px;">Hi, {{ session['username'] }}!</p>
 
-                <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav ml-auto mb-2 mb-lg-0"  style="width:75px;">
     <li class="nav-item">
         <a class="nav-link" href="logout">
-            <i class="fas fa-sign-out-alt"></i> Logout
+            <i class="fas fa-sign-out-alt"></i>
         </a>
     </li>
 </ul>

@@ -22,7 +22,6 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
-            text-align: center;
         }
 
         label {
@@ -53,11 +52,25 @@
         .error {
             color: red;
         }
+        .text-center{
+            text-align:center;
+        }
+        .lh{
+           line-height:1.2;
+        }
+        .text-bg{
+            color:#0618ad;
+            background:#e3e3e3;
+            padding:8px;
+            border-radius:5px;
+
+        }
     </style>
 </head>
 <body>
     <form method="POST" action="{{ url_for('login') }}">
-        <h2>Login</h2>
+        <h2 class="text-center text-bg lh">Zuci Systems</h2>
+        <h4 class="text-center">NPA Predictions - Login</h4>
         {% if error %}
             <p class="error">{{ error }}</p>
         {% endif %}

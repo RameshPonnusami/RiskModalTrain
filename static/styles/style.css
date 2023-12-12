@@ -7,6 +7,12 @@ body {
   height: 100%;
   font-family: Arial,Helvetica,sans-serif;
 }
+.text-right{
+    text-align:right;
+}
+.font-weight-bold{
+    font-weight:800;
+ }
 .btn-square {
   width: 250px;
   height: 100px;
@@ -61,6 +67,7 @@ body {
 }
 .navbar-nav li{
   border:1px solid #fff;
+  border-radius:5px;
   text-align:right;
   margin:5px;
 }
