@@ -1,0 +1,254 @@
+html {
+  height: 100%;
+}
+
+body {
+  background-color: #0d1a33;
+  height: 100%;
+  font-family: Arial,Helvetica,sans-serif;
+}
+.btn-square {
+  width: 250px;
+  height: 100px;
+  border: none;
+  color: white;
+  margin: 10px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px 3px #060d18;
+}
+.btn-square:visited {
+  outline: none;
+}
+.btn-square:focus {
+  outline: none;
+}
+.btn-square:hover {
+  box-shadow: 0px 0px 1px 1px #060d18;
+}
+.btn-square:active {
+  background-color: #ffffff;
+}
+
+.btn-red {
+  background-color: #a90329;
+}
+.btn-red:active {
+  color: #a90329;
+}
+
+.btn-green {
+  background-color: #007f2c;
+}
+.btn-green:active {
+  color: #007f2c;
+}
+
+.btn-orange {
+  background-color: #f7be42;
+}
+.btn-orange:active {
+  color: #f7be42;
+}
+
+.btn-blue {
+  background-color: #499bea;
+}
+.btn-blue:active {
+  color: #499bea;
+}
+.text-gold{
+  color:#FFD700;
+}
+.navbar-nav li{
+  border:1px solid #fff;
+  text-align:right;
+  margin:5px;
+}
+.navbar-nav li:hover{
+  background:#e9c80d;
+  color:#000 !important;
+  font-weight:700;
+}
+.navbar-nav li a{
+  text-align:center;
+}
+.succes {
+  background-color: #4BB543;
+}
+
+.succes-animation {
+  animation: succes-pulse 2s infinite;
+}
+
+.danger {
+  background-color: #CA0B00;
+}
+
+.danger-animation {
+  animation: danger-pulse 2s infinite;
+}
+
+.custom-modal {
+  position: relative;
+  width: 350px;
+  min-height: 200px;
+  /* background-color: #fff; */
+  border-radius: 30px;
+  margin: 40px 10px;
+}
+
+.custom-modal .content {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 0;
+}
+
+.custom-modal .content .type {
+  font-size: 24px;
+  color: #000;
+  font-weight:700;
+}
+
+.custom-modal .content .message-type {
+  font-size: 24px;
+  color: #000;
+}
+
+.custom-modal .border-bottom {
+  position: absolute;
+  width: 300px;
+  height: 20px;
+  border-radius: 0 0 30px 30px;
+  bottom: -20px;
+  margin: 0 25px;
+}
+
+.custom-modal .icon-top {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  top: -30px;
+  margin: 0 125px;
+  font-size: 30px;
+  color: #fff;
+  line-height: 100px;
+  text-align: center;
+}
+
+.bg-lightred {
+  background-color: #f7e0e0;
+}
+
+.bg-lightgreen {
+  background-color: #8af388;
+}
+
+.bg-lightyellow {
+  background-color: #f3d788;
+}
+
+@keyframes succes-pulse {
+  0% {
+      box-shadow: 0px 0px 30px 20px rgba(75, 181, 67, .2);
+  }
+
+  50% {
+      box-shadow: 0px 0px 30px 20px rgba(75, 181, 67, .4);
+  }
+
+  100% {
+      box-shadow: 0px 0px 30px 20px rgba(75, 181, 67, .2);
+  }
+}
+
+@keyframes danger-pulse {
+  0% {
+      box-shadow: 0px 0px 30px 20px rgba(202, 11, 0, .2);
+  }
+
+  50% {
+      box-shadow: 0px 0px 30px 20px rgba(202, 11, 0, .4);
+  }
+
+  100% {
+      box-shadow: 0px 0px 30px 20px rgba(202, 11, 0, .2);
+  }
+}
+
+
+.page-wrapper {
+  /*height: 90vh;
+  background-color: #eee;*/
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+@media only screen and (max-width: 800px) {
+  .page-wrapper {
+      flex-direction: column;
+  }
+}
+img {
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+img:hover {opacity: 0.7;}
+
+/* The Modal (background) */
+#image-viewer {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.9);
+}
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+.modal-content { 
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+@keyframes zoom {
+  from {transform:scale(0)} 
+  to {transform:scale(1)}
+}
+#image-viewer .close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+#image-viewer .close:hover,
+#image-viewer .close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media only screen and (max-width: 700px){
+  .modal-content {
+      width: 100%;
+  }
+}
+.form-label{
+  margin-top:5px;
+}
