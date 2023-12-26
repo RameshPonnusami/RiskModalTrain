@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
+    <title>Risk Score Prediction</title>
+    <style>
+        #targetColumnForm {
+            display: none;
+        }
+
+        .step-container {
+            display: flex;
+            overflow-x: auto;
+        }
+
+        .step {
+            flex: 0 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #progress-bar {
+            width: 100%;
+            background-color: #f1f1f1;
+            height: 30px;
+            position: relative;
+        }
+
+        #progress-bar div {
+            height: 100%;
+            line-height: 30px;
+            text-align: center;
+            position: absolute;
+            color: white;
+            width: 0;
+        }
+
+        #step1, #step2, #step3 {
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Risk Score Prediction</h1>
+
+    <form id="uploadForm">
+        <input type="file" id="fileInput" name="file" accept=".csv">
+        <button type="button" id="uploadButton">Upload CSV</button>
+    </form>
+
+    <div id="first10Records"></div>
+
+    <!-- Form to select the target column -->
+    <div id="targetColumnForm">
+        <label for="targetColumnSelect">Select Target Column:</label>
+        <select id="targetColumnSelect"></select>
+        <button type="button" id="selectTargetColumnButton">Select Target Column</button>
+    </div>
+
+     <!-- Progress bar -->
+    <div id="progress-bar">
+        <div id="step1" style="background-color:#4CAF50;"></div>
+        <div id="step2" style="background-color:#4CAF50;"></div>
+        <div id="step3" style="background-color:#4CAF50;"></div>
+    </div>
+
+    <div class="step-container">
+
+
+        <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+            <div class="col-md-8 mx-auto bg-white">
+<!--                <h3 class="bg-primary text-center text-white rounded">Coef Table</h3>-->
+                <div id="coef"></div>
+            </div>
+        </div>
+
+        <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+            <div class="col-md-8 mx-auto bg-white">
+<!--                <h3 class="bg-primary text-center text-white rounded">P-Value Table</h3>-->
+                <div id="pvalue"></div>
+            </div>
+        </div>
+
+        <div id="threshold-container"></div>
+         <div id="selected-features-details-container"></div>
+
+
+
+<div id="charts-container"></div>
+
+
+
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

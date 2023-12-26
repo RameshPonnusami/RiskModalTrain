@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import joblib
 import pandas as pd
@@ -7,8 +9,36 @@ from io import BytesIO
 import base64
 from flask import session
 from functools import wraps
+import logging
+import numpy as np
+import os
+
+from optbin import process_train_data, format_criteria_for_ui
+from generate_chart import process_charts
+
+
 
 app = Flask(__name__)
+
+
+
+# Default log level
+DEFAULT_LOG_LEVEL = logging.DEBUG
+
+# Set the logger level based on the configuration or a default value
+app.logger.setLevel(app.config.get('LOG_LEVEL', DEFAULT_LOG_LEVEL))
+
+# Create a file handler and set the log level
+file_handler = logging.FileHandler('app.log')
+file_handler.setLevel(app.logger.level)
+
+# Create a formatter and add it to the handler
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Add the handler to the app logger
+app.logger.addHandler(file_handler)
+
 
 app.secret_key = "your_secret_key"  # Change this to a secure secret key
 
@@ -51,6 +81,12 @@ def login_required(view_func):
 # Render the main page with the input form and charts
 @app.route('/')
 def index():
+    app.logger.debug('This is a debug message from the route')
+    app.logger.info('This is an info message')
+    app.logger.warning('This is a warning message')
+    app.logger.error('This is an error message')
+    app.logger.critical('This is a critical message')
+
     if 'username' in session:
         return render_template('index.html')
     else:
@@ -77,6 +113,129 @@ def login():
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
+
+
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return {'error': 'No file part'}, 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return {'error': 'No selected file'}, 400
+
+    try:
+
+        file_full_path = os.path.join(app.root_path, 'static', 'train_data', file.filename)
+        file.save(file_full_path)
+        # file.close()
+
+        # Load the CSV file into a DataFrame
+        df = pd.read_csv(file_full_path)
+
+        # Process the DataFrame as needed
+        # For example, get the first 10 records and column names
+        tempdf=df.head(10)
+        tempdf = tempdf.fillna('')
+        first_10_records = tempdf.to_dict(orient='records')
+        columns = list(df.columns)
+        response ={'message': 'File uploaded successfully',
+                'data': {'first_10_records': first_10_records, 'columns': columns,'file_path':file_full_path}}
+        # print(response)
+        return response
+
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
+
+def custom_encoder(obj):
+    def handle_item(item):
+        if isinstance(item, (float, int, np.float128)):
+            # Convert float, int, or float128 to string with a fixed number of decimal places
+            return round(float(item), 2)
+        elif isinstance(item, str):
+            # Handle strings if needed
+            return item
+        elif isinstance(item, list):
+            # Recursively encode elements in a list
+            return [handle_item(sub_item) for sub_item in item]
+        elif isinstance(item, dict):
+            # Recursively encode values in a dictionary
+            return {key: handle_item(value) for key, value in item.items()}
+        else:
+            raise TypeError(f"Object of type {type(item).__name__} is not JSON serializable")
+
+    return handle_item(obj)
+
+
+@app.route('/model_train', methods=['GET','POST'])
+@login_required
+def model_train():
+    if request.method == 'POST':
+        # Get the selected target column from the AJAX request
+        target_column = request.json.get('target_column')
+        file_path = request.json.get('file_path')
+        print(file_path)
+        traindf = pd.read_csv(file_path)
+        # Process the target column as needed
+        # For example, print or store the selected target column
+        print('Selected Target Column:', target_column)
+
+        # task = perform_data_cleaning.apply_async(args=[request.form['file_path']])
+        # filedata = request.form['file']
+
+        all_chart_details = process_charts(traindf,target_column)
+        logit_str,log_reg,threshold,selected_features,selected_features_and_bin_data_list=process_train_data(traindf,target_column)
+
+        model_summary = log_reg.summary()
+        model_info = "Replace this with actual model details"
+
+        # Extract the first table from model_summary
+        coef_table_data = model_summary.tables[1]
+        pvalue_table_data = model_summary.tables[0]
+
+
+        # Convert the table data to a DataFrame
+        tempdf = pd.DataFrame(pvalue_table_data.data)
+        first_row_list = tempdf.iloc[0].tolist()
+        tempdf = tempdf.drop(index=tempdf.index[0])
+        tempdf.columns = first_row_list
+        pvalue_records = tempdf.to_dict(orient='records')
+        # print('pvalue_records',pvalue_records)
+
+        tempdf = pd.DataFrame(coef_table_data.data)
+        first_row_list = tempdf.iloc[0].tolist()
+        tempdf = tempdf.drop(index=tempdf.index[0])
+        tempdf.columns = first_row_list
+        coef_records = tempdf.to_dict(orient='records')
+        # print('coef_records',coef_records)
+
+        coef_table_html = model_summary.tables[1].as_html()
+        pvalues_table_html = model_summary.tables[0].as_html()
+
+        # print(({"coef":coef_table_html,"pvalue":pvalues_table_html,'threshold':threshold,"selected_features":selected_features}))
+        # print("pvalue",pvalue_records,)
+        print(all_chart_details)
+
+        selected_features_details_list = format_criteria_for_ui(selected_features_and_bin_data_list)
+        print(selected_features_details_list)
+
+        return json.dumps({"coef":coef_records,"pvalue":pvalue_records,'threshold':threshold,
+                           "selected_features":list(selected_features),
+
+                           "chartDetails":all_chart_details,
+                           "selected_features_details": selected_features_details_list,
+                           },default=custom_encoder)
+
+    else:
+        return render_template('model_train.html')
+
+
+
 
 @app.route('/model_details')
 @login_required
@@ -207,6 +366,69 @@ def predict():
     except Exception as e:
         raise e
         return render_template('error.html', error_message=str(e))
+
+@app.route('/set_log_level', methods=['POST'])
+def set_log_level():
+    new_log_level_str = request.form.get('log_level', '').upper()
+
+    # Check if the provided log level is valid
+    if new_log_level_str not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
+        return jsonify({'error': 'Invalid log level'}), 400
+
+    new_log_level = getattr(logging, new_log_level_str, DEFAULT_LOG_LEVEL)
+
+    # Set the log level for the application's logger and file handler
+    app.config['LOG_LEVEL'] = new_log_level
+    app.logger.setLevel(new_log_level)
+    file_handler.setLevel(new_log_level)
+
+    return jsonify({'message': f'Log level set to {new_log_level_str}'}), 200
+
+
+from celery import Celery
+
+# Create Celery instances
+celery_instance_1 = Celery('celery_instance_1')
+celery_instance_2 = Celery('celery_instance_2')
+celery_instance_3 = Celery('celery_instance_3')
+
+# Function to set log level for a Celery instance
+def set_celery_log_level(celery_instance, new_log_level_str):
+    new_log_level = getattr(logging, new_log_level_str, DEFAULT_LOG_LEVEL)
+    celery_instance.conf['LOG_LEVEL'] = new_log_level
+    celery_instance.log.setLevel(new_log_level)
+
+# Define Celery tasks for each instance
+@celery_instance_1.task
+def example_task_1():
+    celery_instance_1.log.debug('This is a debug message from task in instance 1')
+
+@celery_instance_2.task
+def example_task_2():
+    celery_instance_2.log.debug('This is a debug message from task in instance 2')
+
+@celery_instance_3.task
+def example_task_3():
+    celery_instance_3.log.debug('This is a debug message from task in instance 3')
+
+
+# Flask endpoint to set Celery log level dynamically for all instances
+@app.route('/set_celery_log_level', methods=['POST'])
+def set_celery_log_level():
+    new_log_level_str = request.form.get('log_level', '').upper()
+
+    # Check if the provided log level is valid
+    if new_log_level_str not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
+        return jsonify({'error': 'Invalid log level'}), 400
+
+    # Set the log level for each Celery instance
+    set_celery_log_level(celery_instance_1, new_log_level_str)
+    set_celery_log_level(celery_instance_2, new_log_level_str)
+    set_celery_log_level(celery_instance_3, new_log_level_str)
+
+    return jsonify({'message': f'Celery log level set to {new_log_level_str} for all instances'}), 200
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000,debug=True)
