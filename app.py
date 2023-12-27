@@ -15,7 +15,7 @@ import os
 
 from optbin import process_train_data, format_criteria_for_ui
 from generate_chart import process_charts
-
+from optbin import predict_score
 
 
 app = Flask(__name__)
@@ -262,7 +262,7 @@ def model_train():
         return render_template('model_train.html')
 
 
-from optbin import predict_score
+
 @app.route('/model_test_with_user_input', methods=['POST'])
 def model_test_with_user_input():
     if request.method == 'POST':
