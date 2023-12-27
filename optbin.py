@@ -174,10 +174,7 @@ def process_train_data(traindf, target_column):
 
     # scorecard df
     scoredf = scorecard.table(style="detailed")
-
-    # scoredf[scoredf['Variable'] == 'revol_util']
-    # scoredf[(scoredf['Event rate'] >= 0.20) & (scoredf['WoE'] <= -0.20)]
-
+    print(scoredf)
     # selected_features_bin = scoredf[(scoredf['Event rate']>=0.20) & (scoredf['IV']>0.01)]
     selected_features_bin = scoredf[(scoredf['Event rate'] >= threshold['Risk Average']) & (scoredf['WoE'] <= -0.20)]
     # print(selected_features_bin)
@@ -253,12 +250,9 @@ def predict_score(json_data,selectedcriteria,model_full_path):
     low_risk_threshold=json_data['low_risk_threshold']
     high_risk_threshold= json_data['high_risk_threshold']
 
-    print('low_risk_threshold',low_risk_threshold)
-    print('high_risk_threshold',high_risk_threshold)
 
     # Assign risk categories
     risk_cat = 'Green' if score < float(low_risk_threshold) else 'Yellow' if float(low_risk_threshold) <= score <= float(high_risk_threshold) else 'Red'
-    print(risk_cat)
     score_percentage = score*100
     return score_percentage, risk_cat
 
