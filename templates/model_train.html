@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!--    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
       <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!--        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
+<!--<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>-->
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <title>Risk Score Prediction</title>
     <style>
@@ -50,7 +53,24 @@
             cursor: pointer;
         }
 
+           /* Custom style to display options horizontally */
+         .option-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .radio-label {
+        margin-right: 15px; /* Adjust the margin as needed */
+    }
+    .form-control {
+        margin-left: 15px; /* Adjust the margin as needed */
+    }
+    .radio-container {
+        margin-right: 15px; /* Add margin between radio buttons and labels */
+    }
+
     </style>
+
 </head>
 <body>
     <h1>Risk Score Prediction</h1>
@@ -61,6 +81,20 @@
     </form>
 
     <div id="first10Records"></div>
+
+    <button id="togglebutton" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nanFillContainer" aria-expanded="false" aria-controls="nanFillContainer" style="display: none;">
+    Fill Nan Values
+</button>
+
+<!-- Collapsible container -->
+<div id="nanFillContainer" class="container mt-3 collapse ml-0">
+    <h2>NaN Fill Options</h2>
+    <form id="nanFillForm">
+        <!-- The container to display columns and options -->
+        <div id="columnOptionsContainer"></div>
+    </form>
+</div>
+
 
     <!-- Form to select the target column -->
     <div id="targetColumnForm">
@@ -92,9 +126,12 @@
                 <div id="pvalue"></div>
             </div>
         </div>
-
+        <div>
         <div id="threshold-container"></div>
+            </div>
+<div>
          <div id="selected-features-details-container"></div>
+        </div>
 
 
 

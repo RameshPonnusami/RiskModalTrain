@@ -1,5 +1,6 @@
 $(document).ready(function() {
 // Variable to store the file path
+var columnsTypeData ;
     var uploadedFilePath = null;
     $('#uploadButton').click(function() {
         var fileInput = $('#fileInput')[0].files[0];
@@ -19,6 +20,7 @@ $(document).ready(function() {
                 uploadedFilePath = response.data.file_path;
                 // Update the UI with the first 10 records and column names
                 updateUI(response.data);
+
                 // Show a form to select the target column
                 showTargetColumnForm();
             },
@@ -84,6 +86,12 @@ $(document).ready(function() {
     // Update the UI with the list of columns for the target column selection
     var columnsHtml = data.columns.map(column => `<option value="${column}">${column}</option>`).join('');
     $('#targetColumnSelect').html(columnsHtml);
+
+    createColumnOptions(data.column_types);
+    columnsTypeData = data.column_types;
+    document.getElementById('togglebutton').style.display = 'block';
+
+
 }
 // function showStep(step) {
 //            $('.step').addClass('hidden');
@@ -116,6 +124,69 @@ $(document).ready(function() {
     return table;
   }
 
+
+  function createRadio(value, name, description) {
+            const radioContainer = document.createElement('div');
+            radioContainer.className = 'option-container';
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.value = value;
+            radio.name = name;
+            radio.className = 'mr-2';
+
+            const radioLabel = document.createElement('label');
+            radioLabel.textContent = description;
+            radioLabel.className = 'radio-label'; // Added class for styling
+
+            radioContainer.appendChild(radio);
+            radioContainer.appendChild(radioLabel);
+
+            return radioContainer;
+        }
+
+// Function to create options for each column
+        function createColumnOptions(columnsData) {
+            const columnOptionsContainer = document.getElementById('columnOptionsContainer');
+            for (const [columnName, columnType] of Object.entries(columnsData)) {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'mb-1 d-flex align-items-left'; // Added class for styling
+
+                const radioNumeric = createRadio('Do nothing', columnName, 'Do nothing');
+
+                const radioMean = (columnType === 'numeric') ? createRadio('mean', columnName, 'Mean') : null;
+                const radioZero = (columnType === 'numeric') ? createRadio('zero', columnName, 'Zero') : null;
+                const radioManualInput = createRadio('manual', columnName, 'Manual Input');
+
+                optionDiv.appendChild(radioNumeric);
+                if (radioMean) {
+                    optionDiv.appendChild(radioMean);
+                }
+                if (radioZero) {
+                    optionDiv.appendChild(radioZero);
+                }
+
+                optionDiv.appendChild(radioManualInput);
+
+                const label = document.createElement('label');
+                label.textContent = `Column: ${columnName}, Type: ${columnType}`;
+                optionDiv.appendChild(label);
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control'; // Adjust margin as needed
+                input.name = columnName + '_manual_input';
+                input.style.display = 'none'; // Initially hide the input field
+
+                // Event listener to show/hide the input field based on the selected radio button
+                radioManualInput.querySelector('input[type="radio"]').addEventListener('change', function () {
+                    input.style.display = this.checked ? 'block' : 'none';
+                });
+
+                optionDiv.appendChild(input);
+                columnOptionsContainer.appendChild(optionDiv);
+            }
+        }
 
 
      // Assuming you have a function to update content for each step
@@ -359,13 +430,40 @@ console.log('data',model_full_path);
         return rest;
     };
     $('#selectTargetColumnButton').click(function() {
+
+            const form = document.getElementById('nanFillForm');
+            const formData = new FormData(form);
+
+            const selectedOptionsList = [];
+
+            // Iterate over form data and handle selections for radio buttons only
+            formData.forEach((value, name) => {
+                // Check if it's a radio button (exclude input fields)
+                if (!name.endsWith('_manual_input')) {
+                    const columnName = name; // Keep the full column name
+                    const selectedOption = (value === 'manual') ? 'manual' : (value === 'mean' && columnsTypeData[columnName] === 'numeric') ? 'mean' :(value === 'zero' && columnsTypeData[columnName] === 'numeric') ? 'zero' : 'do-nothing';
+
+                    const selectedOptions = {
+                        columnName: columnName,
+                        columnType: columnsTypeData[columnName],
+                        selectedOption: selectedOption,
+                        textInput: (selectedOption === 'manual') ? formData.get(columnName + '_manual_input') : ''
+                    };
+
+                    selectedOptionsList.push(selectedOptions);
+                }
+            });
+
+            console.log(selectedOptionsList);
+
+
         var selectedTargetColumn = $('#targetColumnSelect').val();
 
         $.ajax({
             url: '/model_train',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ target_column: selectedTargetColumn, file_path: uploadedFilePath }),
+            data: JSON.stringify({ target_column: selectedTargetColumn, file_path: uploadedFilePath ,column_changes:selectedOptionsList}),
             success: function(response) {
                 console.log('Target column selected successfully:',response);
                  response = JSON.parse(response);

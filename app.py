@@ -16,7 +16,7 @@ import os
 from optbin import process_train_data, format_criteria_for_ui
 from generate_chart import process_charts
 from optbin import predict_score
-
+from utils import fil_none_values
 
 app = Flask(__name__)
 
@@ -115,7 +115,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-
+from generate_chart import identify_data_types
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -142,8 +142,19 @@ def upload_file():
         tempdf = tempdf.fillna('')
         first_10_records = tempdf.to_dict(orient='records')
         columns = list(df.columns)
+        categorical_columns, numeric_columns = identify_data_types(tempdf)
+        column_types = {}
+        for cn in categorical_columns:
+            column_types[cn] = 'categorical'
+        for cn in numeric_columns:
+            column_types[cn] = 'numeric'
+
+
         response ={'message': 'File uploaded successfully',
-                'data': {'first_10_records': first_10_records, 'columns': columns,'file_path':file_full_path}}
+                'data': {'first_10_records': first_10_records, 'columns': columns,'file_path':file_full_path,
+                         "column_types":column_types
+                         }
+                   }
         # print(response)
         return response
 
@@ -199,8 +210,10 @@ def model_train():
         # Get the selected target column from the AJAX request
         target_column = request.json.get('target_column')
         file_path = request.json.get('file_path')
-        print(file_path)
+        column_changes = request.json.get('column_changes')
+
         traindf = pd.read_csv(file_path)
+        traindf = fil_none_values(column_changes, traindf)
         # Process the target column as needed
         # For example, print or store the selected target column
         print('Selected Target Column:', target_column)
@@ -467,7 +480,12 @@ def set_celery_log_level():
 
     return jsonify({'message': f'Celery log level set to {new_log_level_str} for all instances'}), 200
 
-
+@app.route('/testapi', methods=['POST','GET'])
+def testapi():
+    if request.method == 'POST':
+        print(request.json)
+        return {"msg":"hi"}
+    return render_template('test.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000,debug=True)

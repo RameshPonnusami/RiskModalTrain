@@ -168,7 +168,7 @@ def process_train_data(traindf, target_column):
 
     # feature details
     feature_details = binning_process.summary()
-
+    print(feature_details)
     # scorecard fit
     scorecard.fit(X, y, show_digits=4)
 

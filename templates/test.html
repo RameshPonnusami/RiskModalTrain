@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaN Fill UI</title>
+    <!-- Include Bootstrap CSS from CDN for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom style to display options horizontally */
+         .option-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .radio-label {
+        margin-right: 15px; /* Adjust the margin as needed */
+    }
+    .form-control {
+        margin-left: 15px; /* Adjust the margin as needed */
+    }
+    .radio-container {
+        margin-right: 15px; /* Add margin between radio buttons and labels */
+    }
+        /* Add more styles as needed */
+    </style>
+</head>
+<body>
+
+   <!-- Button to toggle the collapse -->
+<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nanFillContainer" aria-expanded="false" aria-controls="nanFillContainer">
+    Toggle Options
+</button>
+
+<!-- Collapsible container -->
+<div id="nanFillContainer" class="container mt-3 collapse ml-0">
+    <h2>NaN Fill Options</h2>
+    <form id="nanFillForm">
+        <!-- The container to display columns and options -->
+        <div id="columnOptionsContainer"></div>
+        <button type="button" class="btn btn-primary mt-3" onclick="submitForm()">Submit</button>
+    </form>
+</div>
+
+
+    <!-- Include Bootstrap JS and Popper.js from CDN for dynamic behavior -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Mock data for column names and types
+        const columnsData = {
+            'column1': 'numeric',
+            'column2': 'categorical',
+            'column3': 'numeric',
+            'column4': 'categorical'
+            // Add more columns as needed
+        };
+
+        // Function to create a radio button with label and description
+        function createRadio(value, name, description) {
+            const radioContainer = document.createElement('div');
+            radioContainer.className = 'option-container';
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.value = value;
+            radio.name = name;
+            radio.className = 'mr-2';
+
+            const radioLabel = document.createElement('label');
+            radioLabel.textContent = description;
+            radioLabel.className = 'radio-label'; // Added class for styling
+
+            radioContainer.appendChild(radio);
+            radioContainer.appendChild(radioLabel);
+
+            return radioContainer;
+        }
+
+        // Function to create options for each column
+        function createColumnOptions() {
+            const columnOptionsContainer = document.getElementById('columnOptionsContainer');
+            for (const [columnName, columnType] of Object.entries(columnsData)) {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'mb-3 d-flex align-items-center'; // Added class for styling
+
+                const radioNumeric = createRadio('Do nothing', columnName, 'Do nothing');
+
+                const radioMean = (columnType === 'numeric') ? createRadio('mean', columnName, 'Mean') : null;
+                const radioZero = (columnType === 'numeric') ? createRadio('zero', columnName, 'Zero') : null;
+
+                const radioManualInput = createRadio('manual', columnName, 'Manual Input');
+
+                optionDiv.appendChild(radioNumeric);
+                if (radioMean) {
+                    optionDiv.appendChild(radioMean);
+                }
+                if (radioZero) {
+                    optionDiv.appendChild(radioZero);
+                }
+                optionDiv.appendChild(radioManualInput);
+
+                const label = document.createElement('label');
+                label.textContent = `Column: ${columnName}, Type: ${columnType}`;
+                optionDiv.appendChild(label);
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control'; // Adjust margin as needed
+                input.name = columnName + '_manual_input';
+                input.style.display = 'none'; // Initially hide the input field
+
+                // Event listener to show/hide the input field based on the selected radio button
+                radioManualInput.querySelector('input[type="radio"]').addEventListener('change', function () {
+                    input.style.display = this.checked ? 'block' : 'none';
+                });
+
+                optionDiv.appendChild(input);
+                columnOptionsContainer.appendChild(optionDiv);
+            }
+        }
+
+        // Function to submit the form and handle user selections
+        function submitForm() {
+            const form = document.getElementById('nanFillForm');
+            const formData = new FormData(form);
+
+            const selectedOptionsList = [];
+
+            // Iterate over form data and handle selections for radio buttons only
+            formData.forEach((value, name) => {
+                // Check if it's a radio button (exclude input fields)
+                if (!name.endsWith('_manual_input')) {
+                    const columnName = name; // Keep the full column name
+                    const selectedOption = (value === 'manual') ? 'manual' : (value === 'mean' && columnsData[columnName] === 'numeric') ? 'mean' :(value === 'zero' && columnsData[columnName] === 'numeric') ? 'zero' : 'do-nothing';
+
+                    const selectedOptions = {
+                        columnName: columnName,
+                        columnType: columnsData[columnName],
+                        selectedOption: selectedOption,
+                        textInput: (selectedOption === 'manual') ? formData.get(columnName + '_manual_input') : ''
+                    };
+
+                    selectedOptionsList.push(selectedOptions);
+                }
+            });
+
+            console.log(selectedOptionsList);
+            // Implement your logic here to handle the selected options
+
+             // Make an AJAX call using the fetch API
+                    fetch('/testapi', {
+                        method: 'POST',
+                           headers: {
+                                     'Content-Type': 'application/json', // Set the content type to JSON
+                            },
+                      body: JSON.stringify(selectedOptionsList),
+                    }).then(response => response.json()) // Assuming the response is in JSON format
+                    .then(data => {
+                        console.log(data);
+                      ;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+
+
+        }
+
+        // Call the function to create column options on page load
+        createColumnOptions();
+    </script>
+</body>
+</html>
