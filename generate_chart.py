@@ -39,7 +39,7 @@ def plot_bar_chart(findf, bin_column_name, target_percentage, target_label, save
     #     plt.xticks( findf[bin_column_name], findf.index.values ) # location, labels
     # Save the chart as an image with increased bottom margin
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0.1)
-    plt.show()
+    # plt.show()
     plt.close()
 
 
@@ -149,7 +149,7 @@ def plot_regression_decile(column, final_df, target, additional_columns=[]):
     # save_path = 'charts/' + column_mean + '.png'
     save_path = get_save_path(column_mean + '.png')
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0.1)
-    plt.show()
+    # plt.show()
     plt.close()
     # print('-------------------------------------------------------------------------------------------------------')
     return save_path, FinalDataFrame
