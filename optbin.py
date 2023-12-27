@@ -4,7 +4,9 @@ from optbinning import Scorecard
 from sklearn.model_selection import train_test_split
 import statsmodels.formula.api as smf
 import numpy as np
-
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def parse_interval(interval_str):
     interval_str = interval_str.replace('(', '').replace(')', '').replace('[', '').replace(']', '')
@@ -73,6 +75,46 @@ def do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_d
                                                  model_input_data[column_name]]
     return model_input_data
 
+def performance_metrics(log_reg,X_test,y_test):
+    y_pred = log_reg.predict(X_test)
+    y_pred_binary = (y_pred >= 0.5).astype(int)
+    # Compute confusion matrix
+    cm = confusion_matrix(y_test, y_pred_binary)
+
+    TN = cm[0][0]
+    TP = cm[1][1]
+    FP = cm[0][1]
+    FN = cm[1][0]
+    # print('TRUE Negative', TN)
+    # print('TRUE Positive', TP)
+    # print('False Positive', FP)
+    # print('False Negative', FN)
+
+    accuracy = (TP + TN) / (TP + TN + FP + FN)  # = (4 + 3200) / (4 + 3200 + 10 + 786) #≈ 0.8002
+    # print("Accuracy:", accuracy)
+    precision = TP / (TP + FP)  # = 4 / (4 + 10) #≈ 0.2857
+    # print("Precision:", precision)
+    recall = TP / (TP + FN)  # = 4 / (4 + 786) #≈ 0.0051
+    # print("Recall (Sensitivity):", recall)
+    f1_score = 2 * (precision * recall) / (precision + recall)  # = 2 * (0.2857 * 0.0051) / (0.2857 + 0.0051) ≈ 0.0101
+    # print("F1 Score:", f1_score)
+
+    performance_metrics_dict = {
+        "accuracy":accuracy,
+        "precision":precision,
+        "recall":recall,
+        "f1_score":f1_score,
+        "cm":cm
+    }
+    # Display confusion matrix using seaborn
+    # plt.figure(figsize=(8, 6))
+    # sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Predicted 0', 'Predicted 1'],
+    #             yticklabels=['Actual 0', 'Actual 1'])
+    # plt.xlabel('Predicted Label')
+    # plt.ylabel('True Label')
+    # plt.title('Confusion Matrix')
+    # plt.show()
+    return performance_metrics_dict
 
 def process_train_data(traindf, target_column):
     # target_column = 'bad_loan'
@@ -151,5 +193,5 @@ def process_train_data(traindf, target_column):
 
     ipdata = X_train.dropna()
     log_reg = smf.logit(logit_str, data=ipdata).fit()
-
-    return logit_str, log_reg, threshold, selected_features_names_with_target,selected_features_and_bin_data_list
+    performance_metrics_dict = performance_metrics(log_reg, X_test, y_test)
+    return logit_str, log_reg, threshold, selected_features_names_with_target,selected_features_and_bin_data_list,performance_metrics_dict

@@ -90,6 +90,9 @@ $(document).ready(function() {
 //            $('#' + step).removeClass('hidden');
 //        }
 
+
+
+
     function showTargetColumnForm() {
         $('#targetColumnForm').show();
     }
@@ -173,6 +176,83 @@ function updateCharts(jsonData,chart_type) {
 
 
 
+function generate_user_input_form(data,object_unique_data){
+console.log('data',data);
+// Create a form dynamically based on column info
+                const dynamicFormContainer = document.getElementById('dynamicFormContainer');
+                const form = document.createElement('form');
+                form.id = 'dynamicForm';
+                form.method = 'POST';
+                form.action = '#';  // Update with your form action URL
+
+                for (const [column, data_type] of Object.entries(data)) {
+                    const label = document.createElement('label');
+                    label.for = column;
+                    label.textContent = `${column}:`;
+                    form.appendChild(label);
+
+                    if (data_type === 'int64') {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.name = column;
+                        input.id = column;
+                        input.required = true;
+                        form.appendChild(input);
+                    } else if (data_type === 'float64' || data_type === 'int32') {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.pattern = '[0-9]+(\.[0-9]+)?';
+                        input.name = column;
+                        input.id = column;
+                        input.required = true;
+                        form.appendChild(input);
+                    } else if (data_type === 'object') {
+
+                        console.log(column);
+                           const select = document.createElement('select');
+                             select.name =column;
+                               select.id = column;
+                                select.classList.add('form-control');
+                                select.required = true;
+                                console.log('object_unique_data',object_unique_data);
+                                child_data =object_unique_data[column];
+                                console.log(child_data);
+                                child_data.forEach(cd => {
+                                const option = document.createElement('option');
+                                option.value = cd;
+                                option.textContent = cd;
+                                // Check if the grade is selected (you can replace 'selectedGrade' with the actual selected grade variable)
+                                option.selected = 'selectedGrade' === cd;
+                                select.appendChild(option);
+                                form.appendChild(select);
+                                });
+
+
+
+
+
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.name = column;
+                        input.id = column;
+                        input.required = true;
+                        form.appendChild(input);
+                    }
+
+                    const lineBreak = document.createElement('br');
+                    form.appendChild(lineBreak);
+                }
+
+                const submitButton = document.createElement('button');
+                submitButton.type = 'submit';
+                submitButton.textContent = 'Submit';
+                form.appendChild(submitButton);
+
+                dynamicFormContainer.appendChild(form);
+}
+
+
     $('#selectTargetColumnButton').click(function() {
         var selectedTargetColumn = $('#targetColumnSelect').val();
 
@@ -210,7 +290,7 @@ function updateCharts(jsonData,chart_type) {
 
                     updateCharts(chartDetails,'line_chart') ;
                     updateCharts(chartDetails,'bar_chart') ;
-
+                    generate_user_input_form(response.column_info,response.object_unique_values)
 
 
 

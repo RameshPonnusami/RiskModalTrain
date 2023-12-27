@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!--    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
+      <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
     <title>Risk Score Prediction</title>
     <style>
         #targetColumnForm {
@@ -96,13 +100,15 @@
 
 <div id="charts-container"></div>
 
+        <div id="dynamicFormContainer"></div>
+
+    <!-- Include the dynamicForm.js file -->
+    <script src="dynamicForm.js"></script>
 
 
 
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
+
 </body>
 </html>

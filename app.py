@@ -172,6 +172,17 @@ def custom_encoder(obj):
     return handle_item(obj)
 
 
+def get_column_info_for_ui(uidf):
+    # Get column names and their data types
+    column_info = {column: str(uidf[column].dtype) for column in uidf.columns}
+    object_unique_values = {}
+    for ci in column_info.keys():
+        if column_info[ci] == 'object':
+            unique_list = list(uidf[ci].unique())
+            filtered_list = [x for x in unique_list if not (isinstance(x, float) and np.isnan(x)) and x != 'NaN']
+            object_unique_values[ci] = filtered_list
+    return object_unique_values,column_info
+
 @app.route('/model_train', methods=['GET','POST'])
 @login_required
 def model_train():
@@ -185,11 +196,15 @@ def model_train():
         # For example, print or store the selected target column
         print('Selected Target Column:', target_column)
 
+
+
+
+
         # task = perform_data_cleaning.apply_async(args=[request.form['file_path']])
         # filedata = request.form['file']
 
         all_chart_details = process_charts(traindf,target_column)
-        logit_str,log_reg,threshold,selected_features,selected_features_and_bin_data_list=process_train_data(traindf,target_column)
+        logit_str,log_reg,threshold,selected_features,selected_features_and_bin_data_list,performance_metrics_dict=process_train_data(traindf,target_column)
 
         model_summary = log_reg.summary()
         model_info = "Replace this with actual model details"
@@ -219,16 +234,17 @@ def model_train():
 
         # print(({"coef":coef_table_html,"pvalue":pvalues_table_html,'threshold':threshold,"selected_features":selected_features}))
         # print("pvalue",pvalue_records,)
-        print(all_chart_details)
 
         selected_features_details_list = format_criteria_for_ui(selected_features_and_bin_data_list)
-        print(selected_features_details_list)
+
+        object_unique_values, column_info =get_column_info_for_ui(traindf[list(selected_features)])
 
         return json.dumps({"coef":coef_records,"pvalue":pvalue_records,'threshold':threshold,
                            "selected_features":list(selected_features),
-
                            "chartDetails":all_chart_details,
                            "selected_features_details": selected_features_details_list,
+                           "column_info":column_info,
+                            "object_unique_values":object_unique_values,
                            },default=custom_encoder)
 
     else:
