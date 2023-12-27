@@ -183,6 +183,15 @@ def get_column_info_for_ui(uidf):
             object_unique_values[ci] = filtered_list
     return object_unique_values,column_info
 
+
+# Function to convert each element to numeric or keep as string
+def convert_to_numeric_or_str(value):
+    try:
+        return pd.to_numeric(value)
+    except ValueError:
+        return value
+
+
 @app.route('/model_train', methods=['GET','POST'])
 @login_required
 def model_train():
@@ -197,14 +206,10 @@ def model_train():
         print('Selected Target Column:', target_column)
 
 
-
-
-
-        # task = perform_data_cleaning.apply_async(args=[request.form['file_path']])
-        # filedata = request.form['file']
+        traindf = traindf.applymap(convert_to_numeric_or_str)
 
         all_chart_details = process_charts(traindf,target_column)
-        logit_str,log_reg,threshold,selected_features,selected_features_and_bin_data_list,performance_metrics_dict=process_train_data(traindf,target_column)
+        logit_str,log_reg,threshold,selected_features,selected_features_and_bin_data_list,performance_metrics_dict,model_full_path=process_train_data(traindf,target_column)
 
         model_summary = log_reg.summary()
         model_info = "Replace this with actual model details"
@@ -239,19 +244,37 @@ def model_train():
 
         object_unique_values, column_info =get_column_info_for_ui(traindf[list(selected_features)])
 
+        column_info.pop(target_column, None)
+
         return json.dumps({"coef":coef_records,"pvalue":pvalue_records,'threshold':threshold,
                            "selected_features":list(selected_features),
                            "chartDetails":all_chart_details,
                            "selected_features_details": selected_features_details_list,
                            "column_info":column_info,
                             "object_unique_values":object_unique_values,
+                           "model_full_path":model_full_path,
+                           "low_risk_threshold":performance_metrics_dict['low_risk_threshold'],
+                            "high_risk_threshold":performance_metrics_dict['high_risk_threshold'],
+                            "std_dev":performance_metrics_dict['std_dev'],
                            },default=custom_encoder)
 
     else:
         return render_template('model_train.html')
 
 
+from optbin import predict_score
+@app.route('/model_test_with_user_input', methods=['POST'])
+def model_test_with_user_input():
+    if request.method == 'POST':
+        request_json = request.json
+        model_full_path = request_json['model_full_path']
+        selectedcriteria = request_json['selectedcriteria']
 
+        selectedcriteria = json.loads(selectedcriteria)
+
+        score, risk_cat = predict_score(request_json,selectedcriteria,model_full_path)
+
+        return json.dumps({"score":score, "risk_cat":risk_cat},default=custom_encoder)
 
 @app.route('/model_details')
 @login_required

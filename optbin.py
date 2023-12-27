@@ -4,9 +4,13 @@ from optbinning import Scorecard
 from sklearn.model_selection import train_test_split
 import statsmodels.formula.api as smf
 import numpy as np
+import pandas as pd
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
+from datetime import datetime
+import joblib
+import os
 
 def parse_interval(interval_str):
     interval_str = interval_str.replace('(', '').replace(')', '').replace('[', '').replace(']', '')
@@ -44,15 +48,19 @@ def format_criteria_for_ui(selected_features_details_list):
         column_type = lv['type']
         criteria = lv['criteria']
         if column_type == 'categorical':
-            lv['criteria'] = ','.join(criteria)
+            lv['Impact Criteria'] = ','.join(criteria)
+            format_list = criteria
         if column_type == 'numerical':
             if np.inf in criteria:
                 string_value = 'greater than '+str( criteria[0])
+                format_list = [ criteria[0],'Above' ]
             elif -np.inf in criteria:
                 string_value = 'lesser than ' + str(criteria[1])
+                format_list = [ 'Below',criteria[1]]
             else:
                 string_value = 'between '+str(criteria[0]) +' to '+ str(criteria[1])
-            lv['criteria']=string_value
+            lv['Impact Criteria']=string_value
+            lv['criteria'] = format_list
         # del lv['criteria']
     return selected_features_details_list
 
@@ -98,13 +106,23 @@ def performance_metrics(log_reg,X_test,y_test):
     # print("Recall (Sensitivity):", recall)
     f1_score = 2 * (precision * recall) / (precision + recall)  # = 2 * (0.2857 * 0.0051) / (0.2857 + 0.0051) ≈ 0.0101
     # print("F1 Score:", f1_score)
+    y_pred_list = y_pred.tolist()
+
+    # Calculate standard deviation
+    std_dev = np.std(y_pred_list)
+
+    low_risk_threshold = np.mean(y_pred_list) - 0.5 * std_dev
+    high_risk_threshold = np.mean(y_pred_list) + 0.5 * std_dev
 
     performance_metrics_dict = {
         "accuracy":accuracy,
         "precision":precision,
         "recall":recall,
         "f1_score":f1_score,
-        "cm":cm
+        "cm":cm,
+        "low_risk_threshold":low_risk_threshold,
+        "high_risk_threshold":high_risk_threshold,
+        "std_dev":std_dev
     }
     # Display confusion matrix using seaborn
     # plt.figure(figsize=(8, 6))
@@ -113,7 +131,7 @@ def performance_metrics(log_reg,X_test,y_test):
     # plt.xlabel('Predicted Label')
     # plt.ylabel('True Label')
     # plt.title('Confusion Matrix')
-    # plt.show()
+    # plt.show()std_dev
     return performance_metrics_dict
 
 def process_train_data(traindf, target_column):
@@ -187,11 +205,64 @@ def process_train_data(traindf, target_column):
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
 
     # model_train_data
-    X_train[target] = y_train
+    ipdata = X_train.copy()
+    ipdata[target] = y_train
+    ipdata = ipdata.dropna()
 
     logit_str = target + " ~ " + features_string
 
-    ipdata = X_train.dropna()
+
     log_reg = smf.logit(logit_str, data=ipdata).fit()
     performance_metrics_dict = performance_metrics(log_reg, X_test, y_test)
-    return logit_str, log_reg, threshold, selected_features_names_with_target,selected_features_and_bin_data_list,performance_metrics_dict
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    model_filename = f'model_{timestamp}.joblib'
+    model_full_path = os.path.join('static', 'trained_model', model_filename)
+
+    joblib.dump(log_reg, model_full_path)
+    return (logit_str, log_reg, threshold, selected_features_names_with_target,selected_features_and_bin_data_list,
+            performance_metrics_dict,model_full_path)
+
+def get_model_file(model_path):
+    return joblib.load(model_path)
+def predict_score(json_data,selectedcriteria,model_full_path):
+    input_dict ={}
+    # print(json_data)
+    for rj in selectedcriteria:
+        cname= rj['name']
+        ctype = rj['type']
+        if ctype == 'numerical':
+            input_dict[cname] = float(json_data[cname])
+        else:
+            input_dict[cname] = json_data[cname]
+
+    input_df = pd.DataFrame([input_dict])
+    for iv in selectedcriteria:
+        if 'Above' in  iv['criteria']:
+            updated_list = [np.inf if item == 'Above' else item for item in iv['criteria']]
+            iv['criteria'] = updated_list
+        elif 'Below' in iv['criteria']:
+            updated_list = [-np.inf if item == 'Below' else item for item in iv['criteria']]
+            iv['criteria']=updated_list
+    # print(selectedcriteria)
+    model_input_data = do_manual_optimal_binning(selectedcriteria, input_df)
+    risk_model = get_model_file(model_full_path)
+    Result = pd.DataFrame(risk_model.predict(model_input_data))
+    score=Result[0][0]
+    print('predicted_score=prediction[0]*100',score)
+
+    low_risk_threshold=json_data['low_risk_threshold']
+    high_risk_threshold= json_data['high_risk_threshold']
+
+    print('low_risk_threshold',low_risk_threshold)
+    print('high_risk_threshold',high_risk_threshold)
+
+    # Assign risk categories
+    risk_cat = 'Green' if score < float(low_risk_threshold) else 'Yellow' if float(low_risk_threshold) <= score <= float(high_risk_threshold) else 'Red'
+    print(risk_cat)
+    score_percentage = score*100
+    return score_percentage, risk_cat
+
+
+
+
+

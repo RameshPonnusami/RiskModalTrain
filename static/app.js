@@ -175,15 +175,53 @@ function updateCharts(jsonData,chart_type) {
 
 
 
-
-function generate_user_input_form(data,object_unique_data){
-console.log('data',data);
+function generate_user_input_form(data,object_unique_data,SelectedfeaturesDetails,model_full_path,std_dev,low_risk_threshold,high_risk_threshold){
+console.log('data',model_full_path);
 // Create a form dynamically based on column info
                 const dynamicFormContainer = document.getElementById('dynamicFormContainer');
                 const form = document.createElement('form');
                 form.id = 'dynamicForm';
                 form.method = 'POST';
-                form.action = '#';  // Update with your form action URL
+//                form.action = '/api';  // Update with your form action URL
+
+                // Add hidden fields to the form
+                const hiddenField1 = document.createElement('input');
+                hiddenField1.type = 'hidden';
+                hiddenField1.name = 'selectedcriteria';
+//                hiddenField1.setAttribute('readonly', true);
+//                hiddenField1.setAttribute('disabled', true);
+                hiddenField1.value = JSON.stringify(SelectedfeaturesDetails);
+
+                form.appendChild(hiddenField1);
+
+                const hiddenField2 = document.createElement('input');
+                hiddenField2.type = 'hidden';
+                hiddenField2.name = 'model_full_path';
+                hiddenField2.value = model_full_path;
+//                hiddenField2.setAttribute('readonly', true);
+//                hiddenField2.setAttribute('disabled', true);
+                form.appendChild(hiddenField2);
+
+
+                const hiddenField3 = document.createElement('input');
+                hiddenField3.type = 'hidden';
+                hiddenField3.name = 'std_dev';
+                hiddenField3.value = std_dev;
+                form.appendChild(hiddenField3);
+
+                const hiddenField4 = document.createElement('input');
+                hiddenField4.type = 'hidden';
+                hiddenField4.name = 'low_risk_threshold';
+                hiddenField4.value = low_risk_threshold;
+                form.appendChild(hiddenField4);
+                console.log('low_risk_threshold',low_risk_threshold);
+                const hiddenField5 = document.createElement('input');
+                hiddenField5.type = 'hidden';
+                hiddenField5.name = 'high_risk_threshold';
+                hiddenField5.value = high_risk_threshold;
+                form.appendChild(hiddenField5);
+
+
 
                 for (const [column, data_type] of Object.entries(data)) {
                     const label = document.createElement('label');
@@ -208,15 +246,12 @@ console.log('data',data);
                         form.appendChild(input);
                     } else if (data_type === 'object') {
 
-                        console.log(column);
                            const select = document.createElement('select');
                              select.name =column;
                                select.id = column;
                                 select.classList.add('form-control');
                                 select.required = true;
-                                console.log('object_unique_data',object_unique_data);
                                 child_data =object_unique_data[column];
-                                console.log(child_data);
                                 child_data.forEach(cd => {
                                 const option = document.createElement('option');
                                 option.value = cd;
@@ -250,9 +285,79 @@ console.log('data',data);
                 form.appendChild(submitButton);
 
                 dynamicFormContainer.appendChild(form);
-}
+
+                // Add an event listener for form submission
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault(); // Prevent the default form submission
+
+                    // Collect form data
+                    const formData = new FormData(form);
+
+                    // Make an AJAX call using the fetch API
+                    fetch('/model_test_with_user_input', {
+                        method: 'POST',
+                           headers: {
+                                     'Content-Type': 'application/json', // Set the content type to JSON
+                            },
+                            body: JSON.stringify({
+                                ...Object.fromEntries(formData),
+                                jsonData: JSON.parse(formData.get('jsonData')) // Parse the JSON data separately
+                            }),
+                    })
+                    .then(response => response.json()) // Assuming the response is in JSON format
+                    .then(data => {
+                        // Handle the response data as needed
+                        console.log(data);
+                        // Assume you have received data for each step in the response
+                        var score = data.score;  // Replace with the actual key in your response
+                        var risk_cat = data.risk_cat;
+                        showPredictedScore(score,risk_cat);
 
 
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                });
+
+    }
+
+
+    function showPredictedScore(Score,Color){
+        const dynamicFormContainer = document.getElementById('dynamicFormContainer');
+        const paragraphId = 'scoreParagraph';
+        const paragraph = document.getElementById(paragraphId);
+        if (paragraph) {
+                // If the <p> element with the specified ID exists, update its content
+                paragraph.textContent = Score;
+            } else {
+                    const paragraph = document.createElement('p');
+                    paragraph.id = paragraphId;
+                     paragraph.textContent = Score;
+                    // Append the <p> element to the existing <div>
+                    dynamicFormContainer.appendChild(paragraph);
+        }
+
+        const colorparagraphId = 'colorParagraph';
+        const colorParagraph = document.getElementById(colorparagraphId);
+        if (colorParagraph) {
+                // If the <p> element with the specified ID exists, update its content
+                colorParagraph.textContent = Color;
+            } else {
+                    const colorParagraph = document.createElement('p');
+                     colorParagraph.id = colorparagraphId;
+                     colorParagraph.textContent = Color;
+                    // Append the <p> element to the existing <div>
+                    dynamicFormContainer.appendChild(colorParagraph);
+                    }
+        }
+
+
+ // Function to remove a specific key from a dictionary
+    const removeKeyFromDict = (dict, keyToRemove) => {
+        const { [keyToRemove]: removedKey, ...rest } = dict;
+        return rest;
+    };
     $('#selectTargetColumnButton').click(function() {
         var selectedTargetColumn = $('#targetColumnSelect').val();
 
@@ -270,7 +375,10 @@ console.log('data',data);
                 var pvalue = response.pvalue;      // Replace with the actual key in your response
                 var chartDetails = response.chartDetails;      // Replace with the actual key in your response
                 var SelectedfeaturesDetails = response.selected_features_details;      // Replace with the actual key in your response
-//                console.log('modelresponse',pvalue)
+                var model_full_path = response.model_full_path;      // Replace with the actual key in your response
+                var low_risk_threshold = response.low_risk_threshold;      // Replace with the actual key in your response
+                var high_risk_threshold = response.high_risk_threshold;      // Replace with the actual key in your response
+                var std_dev = response.std_dev;      // Replace with the actual key in your response
                  var htmlTable = generateTable(coef);
                   $('#coef').html(htmlTable);
 
@@ -279,7 +387,16 @@ console.log('data',data);
 
                   var thresholdTable = generateDictTable(response.threshold);
 
-                  var SelectedfeaturesDetailsTable = generateTable(SelectedfeaturesDetails);
+
+
+                    // Key to remove from each dictionary
+                    const keyToRemove = 'criteria';
+
+                    // Create a new list by removing the specified key from each dictionary
+                    const modifiedList = SelectedfeaturesDetails.map(dict => removeKeyFromDict(dict, keyToRemove));
+                    console.log(modifiedList);
+
+                  var SelectedfeaturesDetailsTable = generateTable(modifiedList);
 
                    var selectedFeaturesList = generateList(response.selected_features);
 
@@ -290,7 +407,8 @@ console.log('data',data);
 
                     updateCharts(chartDetails,'line_chart') ;
                     updateCharts(chartDetails,'bar_chart') ;
-                    generate_user_input_form(response.column_info,response.object_unique_values)
+                    generate_user_input_form(response.column_info,response.object_unique_values,
+                                    SelectedfeaturesDetails,model_full_path,std_dev,low_risk_threshold,high_risk_threshold)
 
 
 
