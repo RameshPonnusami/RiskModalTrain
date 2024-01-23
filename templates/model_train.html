@@ -74,7 +74,7 @@
   margin: auto;
   display: block;
   width: 80%;
-  max-width: 700px;
+  max-width: 75%;
 }
 .modal-content {
   animation-name: zoom;
@@ -114,8 +114,8 @@
         <input type="file" id="fileInput" name="file" accept=".csv">
         <button type="button" id="uploadButton">Upload CSV</button>
     </form>
-
-    <div id="first10Records" class="container mt-3" ></div>
+    <br>
+    <div id="first10Records" class="container-fluid" ></div>
 
     <button id="togglebutton" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nanFillContainer" aria-expanded="false" aria-controls="nanFillContainer" style="display: none;">
     Fill Nan Values
@@ -152,12 +152,7 @@
     </div>
 
 <ul class="nav nav-tabs" id="myTabs">
-    <li class="nav-item">
-        <a class="nav-link active" name="coef-tab" data-toggle="tab" >Coef Table</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" name="pvalue-tab" data-toggle="tab" >P-Value Table</a>
-    </li>
+
     <li class="nav-item">
         <a class="nav-link" name="threshold-container-tab" data-toggle="tab">Threshold Container</a>
     </li>
@@ -166,6 +161,12 @@
     </li>
     <li class="nav-item">
         <a class="nav-link" name="charts-container-tab" data-toggle="tab"  >Charts Container</a>
+    </li>
+       <li class="nav-item">
+        <a class="nav-link active" name="coef-tab" data-toggle="tab" >Coef Table</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="pvalue-tab" data-toggle="tab" >P-Value Table</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" name="dynamicFormContainer-tab" data-toggle="tab"  >Dynamic Form Container</a>
@@ -176,19 +177,19 @@
     <div class="tab-pane fade show active" id="coef-tab">
         <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
             <div class="col-md-8 mx-auto bg-white">
-                <div id="coef">1</div>
+                <div id="coef"></div>
             </div>
         </div>
     </div>
     <div class="tab-pane fade" id="pvalue-tab">
         <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
             <div class="col-md-8 mx-auto bg-white">
-                <div id="pvalue">2</div>
+                <div id="pvalue"></div>
             </div>
         </div>
     </div>
     <div class="tab-pane fade" id="threshold-container-tab">
-        <div id="threshold-container">3</div>
+        <div id="threshold-container"></div>
     </div>
     <div class="tab-pane fade" id="selected-features-details-container-tab">
         <div id="selected-features-details-container"></div>

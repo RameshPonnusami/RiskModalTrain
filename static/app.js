@@ -1,5 +1,8 @@
 $(document).ready(function() {
 // Variable to store the file path
+$("#myTabs").hide();
+$(".tab-content").hide();
+
 var columnsTypeData ;
     var uploadedFilePath = null;
     $('#uploadButton').click(function() {
@@ -116,7 +119,7 @@ var columnsTypeData ;
 
     // Function to generate HTML table for a dictionary
   function generateDictTable(data) {
-    var table = '<table border="1"><thead><tr><th>Attribute</th><th>Value</th></tr></thead><tbody>';
+    var table = '<table class="table table-bordered table-striped table-responsive"  border="1"><thead><tr><th>Attribute</th><th>Value</th></tr></thead><tbody>';
     for (var key in data) {
       table += '<tr><td>' + key + '</td><td>' + data[key] + '</td></tr>';
     }
@@ -342,7 +345,6 @@ console.log('data',model_full_path);
                         input.required = true;
                         form.appendChild(input);
                     } else if (data_type === 'object') {
-
                            const select = document.createElement('select');
                              select.name =column;
                                select.id = column;
@@ -358,10 +360,6 @@ console.log('data',model_full_path);
                                 select.appendChild(option);
                                 form.appendChild(select);
                                 });
-
-
-
-
 
                     } else {
                         const input = document.createElement('input');
@@ -535,7 +533,8 @@ console.log('data',model_full_path);
                     generate_user_input_form(response.column_info,response.object_unique_values,
                                     SelectedfeaturesDetails,model_full_path,std_dev,low_risk_threshold,high_risk_threshold)
 
-
+                   $("#myTabs").show();
+                   $(".tab-content").show();
                  $("#loader").hide();
                 // Handle the response as needed
             },
