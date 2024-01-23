@@ -31,7 +31,7 @@ var columnsTypeData ;
     });
 
     function generateTable(data) {
-  var table = '<table border="1"><thead><tr>';
+  var table = '<table  class="table table-bordered table-striped" border="1"><thead><tr>';
 
   // Create table header
   for (var key in data[0]) {
@@ -55,12 +55,12 @@ var columnsTypeData ;
     function generateTableFromDF(columns,records )
     {
         // Update the UI with the first 10 records as a table
-        var tableHtml = '<table border="1"><thead><tr>';
+        var tableHtml = ' <div class="table-responsive">         <table class="table table-bordered"> <table border="1"><thead><tr>';
 
         // Generate table header from column names
         columns.forEach(column => {
-            tableHtml += `<th>${column}</th>`;
-        });
+        tableHtml += `<th style="border: 1px solid #ddd; width: 150px; padding: 10px;">${column}</th>`;
+    });
 
         tableHtml += '</tr></thead><tbody>';
 
@@ -68,12 +68,13 @@ var columnsTypeData ;
         records.forEach(record => {
             tableHtml += '<tr>';
             columns.forEach(column => {
-                tableHtml += `<td>${record[column]}</td>`;
-            });
+            tableHtml += `<td style="border: 1px solid #ddd; width: 150px; padding: 10px;">${record[column]}</td>`;
+                });
             tableHtml += '</tr>';
         });
 
         tableHtml += '</tbody></table>';
+         tableHtml += '</div>';
         return tableHtml;
     }
 
@@ -202,45 +203,72 @@ function updateCharts(jsonData,chart_type) {
   for (var i = 0; i < jsonData[chart_type].length; i++) {
     var chartData = jsonData[chart_type][i];
 
+
     // Create a container div for each entry
-    var entryContainer = $('<div>');
+    var entryContainerTable = $('<div>').addClass('table-container col-md-6');
+    var entryContainerImg = $('<div>').addClass('chart-container col-md-4');
+
+    var TableHtmlString = '';
+var ImgHtmlString = '';
 
     if (chart_type === 'line_chart') {
       // Display line chart image
-      var lineChartImage = $('<img>').attr('src', chartData.chart_path);
+      var lineChartImage = $('<img>').attr('src', chartData.chart_path).addClass('img-fluid');
       var lineImg = document.createElement('img');
       lineImg.src = lineChartImage.attr('src');  // Get the image source
-      entryContainer.append(lineImg);
-
-      // Display line chart table data
-//      var lineTable = $('<table>').append('<tr><th>X</th><th>Y</th></tr>');
-
+      entryContainerImg.append(lineImg);
      var lineTable= generateTable(chartData.table_data);
+      entryContainerTable.append(lineTable);
+
+        TableHtmlString = $(lineTable).prop('outerHTML');
+ ImgHtmlString = $(lineImg).prop('outerHTML');
+
+//      var chartContainer = $('<div>').addClass('chart-container col-md-6');
+//        chartContainer.append(lineImg);
+//
+//    var tableContainer = $('<div>').addClass('table-container col-md-6');
+//    tableContainer.append(lineTable);
 
 
 
-      entryContainer.append(lineTable);
     } else if (chart_type === 'bar_chart') {
       // Display bar chart image
-      var barChartImage = $('<img>').attr('src', chartData.chart_path);
+      var barChartImage = $('<img>').attr('src', chartData.chart_path).addClass('img-fluid');
       var barImg = document.createElement('img');
       barImg.src = barChartImage.attr('src');  // Get the image source
-      entryContainer.append(barImg);
+      entryContainerImg.append(barImg);
 
       // Display bar chart table data
       var barTable = $('<table>').append('<tr><th>Decile Rank</th><th>Bad Loan Total</th><th>Total Records</th><th>ID Min</th><th>ID Max</th><th>ID Mean</th><th>Percentage Bad Loan</th></tr>');
        var barTable= generateTable(chartData.table_data);
 
-      entryContainer.append(barTable);
+     TableHtmlString = $(barTable).prop('outerHTML');
+ ImgHtmlString = $(barImg).prop('outerHTML');
+
+      entryContainerTable.append(barTable);
+
     }
 
     // Add entryContainer to the main container
-    $('#charts-container').append(entryContainer);
+//    $('#charts-container').append(childDiv);
+console.log(entryContainerImg);
+console.log(entryContainerImg.outerHTML);
+
+//console.log('htmlString',htmlString);
+
+
+    $('#charts-container').append('<div class="row"><div class="col-md-4"><div class="images mx-auto ">'+ImgHtmlString+'</div></div><div class="col-md-8">'+TableHtmlString+'</div></div>');
+     //$('.charts-container-1').append(entryContainerImg);
+    //$('.charts-container-2').append(entryContainerTable);
+
+    //$('#charts-container').append('<br>');
 
     // Add break if not the last entry
-    if (i < jsonData.length - 1) {
-      $('#charts-container').append('<br>');
-    }
+//    if (i < jsonData.length - 1) {
+//      $('#charts-container').append('<br>');
+//      $('#charts-container').append('<br>');
+//      console.log('addbreak;');
+//    }
   }
 }
 
