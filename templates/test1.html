@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaN Fill UI</title>
+  <!-- Include Bootstrap CSS from CDN for styling -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+  <style>
+    .tables-container {
+      display: flex;
+    }
+
+    .numeric-table-container,
+    .categorical-table-container {
+      flex: 1;
+      margin-right: 20px; /* Adjust the margin as needed */
+    }
+  </style>
+<body>
+
+<div class="tables-container">
+  <div class="numeric-table-container">
+    <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Column Name</th>
+        <th>Do Nothing</th>
+        <th>Mean</th>
+        <th>Zero</th>
+        <th>Manual Input</th>
+        <th>Manual Value</th>
+      </tr>
+    </thead>
+    <tbody id="numeric-table-body">
+    </tbody>
+  </table>
+</div>
+
+<div class="categorical-table-container">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Column Name</th>
+        <th>Do Nothing</th>
+        <th>Manual Input</th>
+        <th>Manual Value</th>
+      </tr>
+    </thead>
+    <tbody id="categorical-table-body">
+    </tbody>
+  </table>
+
+</div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const columnsData = {
+    "annual_inc": "numeric",
+    "bad_loan": "numeric",
+    "dti": "numeric",
+    "emp_length_num": "numeric",
+    "grade": "categorical",
+    "home_ownership": "categorical",
+    "id": "numeric",
+    "last_delinq_none": "numeric",
+    "last_major_derog_none": "categorical",
+    "od_ratio": "numeric",
+    "purpose": "categorical",
+    "revol_util": "numeric",
+    "short_emp": "numeric",
+    "term": "categorical",
+    "total_rec_late_fee": "numeric"
+  };
+
+  createColumnOptions(columnsData, 'numeric-table-body', 'numeric');
+  createColumnOptions(columnsData, 'categorical-table-body', 'categorical');
+
+  const allRadioButtons = document.querySelectorAll('input[type="radio"]');
+  allRadioButtons.forEach(function (radio) {
+    radio.addEventListener('change', function () {
+     const radioValue = this.value;
+     const row = this.closest('tr');
+     if (radioValue!='manual'){
+             const cellToDisable = row.querySelector('#manual_input_text');;
+             cellToDisable.style.display = 'none';
+              cellToDisable.setAttribute('disabled', true); // For input elements
+            cellToDisable.style.pointerEvents = 'none'; // For non-input elements
+            cellToDisable.style.color = 'gray';
+         //   row.querySelector('input').disabled = true
+     }
+
+
+      if (!this.checked) {
+        correspondingManualInput.querySelector('input').value = '';
+      }
+    });
+  });
+
+   function createRadio(value, name, description) {
+    const radioContainer = document.createElement('div');
+    radioContainer.className = 'option-container';
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.value = value;
+    radio.name = name;
+    radio.className = 'mr-2';
+
+    const radioLabel = document.createElement('label');
+    radioLabel.textContent = description;
+    radioLabel.className = 'radio-label';
+
+    radioContainer.appendChild(radio);
+    radioContainer.appendChild(radioLabel);
+
+    return radioContainer;
+  }
+
+
+  function createColumnOptions(columnsData, tableBodyId, columnType) {
+    const tableBody = document.querySelector('#' + tableBodyId);
+    for (const [columnName, columnTypeData] of Object.entries(columnsData)) {
+      if (columnTypeData === columnType) {
+        const row = document.createElement('tr');
+
+        // Column name cell
+        const columnNameCell = document.createElement('td');
+        columnNameCell.textContent = columnName;
+        row.appendChild(columnNameCell);
+
+
+
+      // Radio buttons for Do Nothing, Mean, Zero
+      const doNothingRadio = document.createElement('td');
+      doNothingRadio.appendChild(createRadio('do_nothing', columnName, ''));
+      row.appendChild(doNothingRadio);
+
+      const meanRadio = columnType === 'numeric' ? document.createElement('td') : null;
+      if (meanRadio) {
+        meanRadio.appendChild(createRadio('mean', columnName, ''));
+        row.appendChild(meanRadio);
+      }
+
+      const zeroRadio = columnType === 'numeric' ? document.createElement('td') : null;
+      if (zeroRadio) {
+        zeroRadio.appendChild(createRadio('zero', columnName, ''));
+        row.appendChild(zeroRadio);
+      }
+
+      // Manual Input radio button and manual input field
+      const manualInputRadio = document.createElement('td');
+      manualInputRadio.appendChild(createRadio('manual', columnName, 'Manual Input'));
+      row.appendChild(manualInputRadio);
+
+      const manualInput = document.createElement('td');
+      manualInput.setAttribute("id", "manual_input_text");
+      manualInput.textContent = '';
+      manualInput.style.display = 'none';
+      manualInput.appendChild(document.createElement('input')); // Add input field inside the cell
+      row.appendChild(manualInput);
+
+
+
+
+
+          // Event listener to show/hide the manual input field
+   manualInputRadio.querySelector('input[type="radio"]').addEventListener('change', function () {
+  manualInput.style.display = this.checked ? 'block' : 'none';
+  if (!this.checked) {
+    manualInput.querySelector('input[type="text"]').value = ''; // Updated selector
+    manualInput.querySelector('input[type="text"]').style.display = 'none';; // Updated selector
+  }
+});
+
+        tableBody.appendChild(row);
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>

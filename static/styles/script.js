@@ -5,6 +5,8 @@ $(document).ready(function(){
   $('.simpletable').addClass('table-striped');
   $('.table').removeClass('simpletable');
 
+  //$('input').addClass('form-control');
+
   $(".images img").click(function(){
   console.log('imgclick');
     $("#full-image").attr("src", $(this).attr("src"));

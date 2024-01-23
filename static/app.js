@@ -23,6 +23,7 @@ var columnsTypeData ;
                 uploadedFilePath = response.data.file_path;
                 // Update the UI with the first 10 records and column names
                 updateUI(response.data);
+                generateFillNaTableForm(response.data.column_types);
 
                 // Show a form to select the target column
                 showTargetColumnForm();
@@ -89,7 +90,7 @@ var columnsTypeData ;
     // Update the UI with the list of columns for the target column selection
     var columnsHtml = data.columns.map(column => `<option value="${column}">${column}</option>`).join('');
     $('#targetColumnSelect').html(columnsHtml);
-
+    console.log(data.column_types);
     createColumnOptions(data.column_types);
     columnsTypeData = data.column_types;
     document.getElementById('togglebutton').style.display = 'block';
@@ -253,8 +254,7 @@ var ImgHtmlString = '';
 
     // Add entryContainer to the main container
 //    $('#charts-container').append(childDiv);
-console.log(entryContainerImg);
-console.log(entryContainerImg.outerHTML);
+
 
 //console.log('htmlString',htmlString);
 
@@ -332,17 +332,21 @@ console.log('data',model_full_path);
                     if (data_type === 'int64') {
                         const input = document.createElement('input');
                         input.type = 'number';
+                        input.className='form-control';
                         input.name = column;
                         input.id = column;
                         input.required = true;
+
                         form.appendChild(input);
                     } else if (data_type === 'float64' || data_type === 'int32') {
                         const input = document.createElement('input');
                         input.type = 'text';
+                        input.className='form-control';
                         input.pattern = '[0-9]+(\.[0-9]+)?';
                         input.name = column;
                         input.id = column;
                         input.required = true;
+
                         form.appendChild(input);
                     } else if (data_type === 'object') {
                            const select = document.createElement('select');
@@ -355,6 +359,7 @@ console.log('data',model_full_path);
                                 const option = document.createElement('option');
                                 option.value = cd;
                                 option.textContent = cd;
+                                option.className='form-control';
                                 // Check if the grade is selected (you can replace 'selectedGrade' with the actual selected grade variable)
                                 option.selected = 'selectedGrade' === cd;
                                 select.appendChild(option);
@@ -367,6 +372,7 @@ console.log('data',model_full_path);
                         input.name = column;
                         input.id = column;
                         input.required = true;
+                        input.className='form-control';
                         form.appendChild(input);
                     }
 
@@ -377,6 +383,7 @@ console.log('data',model_full_path);
                 const submitButton = document.createElement('button');
                 submitButton.type = 'submit';
                 submitButton.textContent = 'Submit';
+                submitButton.className='btn btn-md btn-success';
                 form.appendChild(submitButton);
 
                 dynamicFormContainer.appendChild(form);
@@ -445,7 +452,106 @@ console.log('data',model_full_path);
                     // Append the <p> element to the existing <div>
                     dynamicFormContainer.appendChild(colorParagraph);
                     }
+        const predictedResult = document.getElementById('predictedResult');
+        var csscolorClass = '';
+        var cssMsg = '';
+        var cssheadClass = '';
+        if (Color==='Green'){
+        csscolorClass = 'bg-lightgreen';
+        cssMsg = 'Financials are sufficient';
+        cssWarningClass = ' <div class="succes succes-animation icon-top"><i class="fa fa-check"></i></div>,'+
+                        '<div class="succes border-bottom"></div>';
+        }else if(Color==='Red'){
+         csscolorClass = 'bg-lightred';
+         cssMsg = 'Financials are sufficient';
+          cssWarningClass = '<div class="danger danger-animation icon-top"><i class="fa fa-times"></i></div>,'+
+                        '<div class="danger border-bottom"></div>';
+        }else {
+         csscolorClass = 'bg-lightyellow';
+         cssMsg = 'Chance to consider';
+          cssWarningClass = '<div class="danger danger-animation icon-top"><i class="fa fa-times"></i></div>,'+
+                        '<div class="danger border-bottom"></div>';
         }
+        var cardString = ('<h2 class="text-center text-white border bg-primary rounded">Predicted Result:'+ Color+'</h2>');
+        cardString += '<div class="custom-modal '+csscolorClass+'">,'+
+                      cssWarningClass+
+                        '<div class="content">,'+
+                         '<p class="type">Score:'+Score +'</p>,'+
+                         cssMsg+
+                        '</div>,'+
+                    '</div>,'
+       predictedResult.innerHTML = cardString;
+
+
+        }
+
+        function GenerateFillNaForm(){
+             const jsonList = [];
+
+            // Extract data from the numeric table
+            extractTableData('numeric-table-body', 'numeric', jsonList);
+
+            // Extract data from the categorical table
+            extractTableData('categorical-table-body', 'categorical', jsonList);
+
+            // Output the generated JSON list
+
+            return jsonList;
+
+            }
+
+          function extractTableData(tableBodyId, columnType, jsonList) {
+            const tableBody = document.getElementById(tableBodyId);
+            const rows = tableBody.querySelectorAll('tr');
+
+            // Iterate through each row
+            rows.forEach(function (row) {
+              const cells = row.querySelectorAll('td');
+              const columnName = cells[0].textContent;
+
+              // Check the selected radio button
+              const selectedOption = getSelectedOption(cells, columnType);
+
+              // Get the text input value for 'manual' option
+
+                var  inputValue ;
+               const manualInputCell = row.querySelector('#manual_input_text');
+                if (manualInputCell) {
+                      // Access the input element within the cell
+                      const inputElement = manualInputCell.querySelector('input');
+
+                      // Check if the input element is found
+                      if (inputElement) {
+                        // Access the value of the input element
+                        inputValue = inputElement.value;
+
+                        // Now you can use the inputValue as needed
+                      }
+                      }
+
+            // Adjust the index based on your structure
+              // Create JSON object and push it to the list
+              const jsonObject = {
+                "columnName": columnName,
+                "selectedOption": selectedOption,
+                "textInput": inputValue,
+                "columnType":columnType,
+              };
+
+              jsonList.push(jsonObject);
+            });
+           }
+
+
+           function getSelectedOption(cells, columnType) {
+                for (let i = 1; i <= 4; i++) {
+                    const radio = cells[i] && cells[i].querySelector('input[type="radio"]');
+                if (radio && radio.checked) {
+                  return radio.value;
+                  }
+                }
+                return '';
+            }
 
 
  // Function to remove a specific key from a dictionary
@@ -455,30 +561,8 @@ console.log('data',model_full_path);
     };
     $('#selectTargetColumnButton').click(function() {
 
-            const form = document.getElementById('nanFillForm');
-            const formData = new FormData(form);
+            selectedOptionsList = GenerateFillNaForm();
 
-            const selectedOptionsList = [];
-
-            // Iterate over form data and handle selections for radio buttons only
-            formData.forEach((value, name) => {
-                // Check if it's a radio button (exclude input fields)
-                if (!name.endsWith('_manual_input')) {
-                    const columnName = name; // Keep the full column name
-                    const selectedOption = (value === 'manual') ? 'manual' : (value === 'mean' && columnsTypeData[columnName] === 'numeric') ? 'mean' :(value === 'zero' && columnsTypeData[columnName] === 'numeric') ? 'zero' : 'do-nothing';
-
-                    const selectedOptions = {
-                        columnName: columnName,
-                        columnType: columnsTypeData[columnName],
-                        selectedOption: selectedOption,
-                        textInput: (selectedOption === 'manual') ? formData.get(columnName + '_manual_input') : ''
-                    };
-
-                    selectedOptionsList.push(selectedOptions);
-                }
-            });
-
-            console.log(selectedOptionsList);
 
 
         var selectedTargetColumn = $('#targetColumnSelect').val();
@@ -545,4 +629,121 @@ console.log('data',model_full_path);
 
         });
     });
+
+
+// Load FillNa Values IN Table Form:
+function generateFillNaTableForm(columnsData){
+  createColumnOptions(columnsData, 'numeric-table-body', 'numeric');
+  createColumnOptions(columnsData, 'categorical-table-body', 'categorical');
+
+  const allRadioButtons = document.querySelectorAll('input[type="radio"]');
+  allRadioButtons.forEach(function (radio) {
+    radio.addEventListener('change', function () {
+     const radioValue = this.value;
+     const row = this.closest('tr');
+     if (radioValue!='manual'){
+             const cellToDisable = row.querySelector('#manual_input_text');;
+             cellToDisable.style.display = 'none';
+              cellToDisable.setAttribute('disabled', true); // For input elements
+            cellToDisable.style.pointerEvents = 'none'; // For non-input elements
+            cellToDisable.style.color = 'gray';
+         //   row.querySelector('input').disabled = true
+     }else{
+        const cellToDisable = row.querySelector('#manual_input_text');;
+        cellToDisable.style.display = 'block'; // Or 'table-cell' if it's a table cell
+        cellToDisable.removeAttribute('disabled'); // Remove 'disabled' attribute for input elements
+        cellToDisable.style.pointerEvents = 'auto'; // Revert pointer events for non-input elements
+        cellToDisable.style.color = '';
+     }
+
+
+      if (!this.checked) {
+        correspondingManualInput.querySelector('input').value = '';
+      }
+    });
+  });
+  }
+
+   function createRadio(value, name, description) {
+    const radioContainer = document.createElement('div');
+    radioContainer.className = 'option-container';
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.value = value;
+    radio.name = name;
+    radio.className = 'mr-2';
+
+    const radioLabel = document.createElement('label');
+    radioLabel.textContent = description;
+    radioLabel.className = 'radio-label';
+
+    radioContainer.appendChild(radio);
+    radioContainer.appendChild(radioLabel);
+
+    return radioContainer;
+  }
+
+
+  function createColumnOptions(columnsData, tableBodyId, columnType) {
+    const tableBody = document.querySelector('#' + tableBodyId);
+    for (const [columnName, columnTypeData] of Object.entries(columnsData)) {
+      if (columnTypeData === columnType) {
+        const row = document.createElement('tr');
+
+        // Column name cell
+        const columnNameCell = document.createElement('td');
+        columnNameCell.textContent = columnName;
+        row.appendChild(columnNameCell);
+
+
+
+      // Radio buttons for Do Nothing, Mean, Zero
+      const doNothingRadio = document.createElement('td');
+      doNothingRadio.appendChild(createRadio('do_nothing', columnName, ''));
+      row.appendChild(doNothingRadio);
+
+      const meanRadio = columnType === 'numeric' ? document.createElement('td') : null;
+      if (meanRadio) {
+        meanRadio.appendChild(createRadio('mean', columnName, ''));
+        row.appendChild(meanRadio);
+      }
+
+      const zeroRadio = columnType === 'numeric' ? document.createElement('td') : null;
+      if (zeroRadio) {
+        zeroRadio.appendChild(createRadio('zero', columnName, ''));
+        row.appendChild(zeroRadio);
+      }
+
+      // Manual Input radio button and manual input field
+      const manualInputRadio = document.createElement('td');
+      manualInputRadio.appendChild(createRadio('manual', columnName, ''));
+      row.appendChild(manualInputRadio);
+
+      const manualInput = document.createElement('td');
+      manualInput.setAttribute("id", "manual_input_text");
+      manualInput.textContent = '';
+      manualInput.style.display = 'none';
+      manualInput.appendChild(document.createElement('input')); // Add input field inside the cell
+      row.appendChild(manualInput);
+
+
+
+
+
+          // Event listener to show/hide the manual input field
+   manualInputRadio.querySelector('input[type="radio"]').addEventListener('change', function () {
+  manualInput.style.display = this.checked ? 'block' : 'none';
+  if (!this.checked) {
+    manualInput.querySelector('input[type="text"]').value = ''; // Updated selector
+    manualInput.querySelector('input[type="text"]').style.display = 'none';; // Updated selector
+  }
+});
+
+        tableBody.appendChild(row);
+      }
+    }
+  }
+
+
 });

@@ -168,13 +168,13 @@ def process_train_data(traindf, target_column):
 
     # feature details
     feature_details = binning_process.summary()
-    print(feature_details)
+    # print(feature_details)
     # scorecard fit
     scorecard.fit(X, y, show_digits=4)
 
     # scorecard df
     scoredf = scorecard.table(style="detailed")
-    print(scoredf)
+    # print(scoredf)
     # selected_features_bin = scoredf[(scoredf['Event rate']>=0.20) & (scoredf['IV']>0.01)]
     selected_features_bin = scoredf[(scoredf['Event rate'] >= threshold['Risk Average']) & (scoredf['WoE'] <= -0.20)]
     # print(selected_features_bin)
@@ -245,7 +245,7 @@ def predict_score(json_data,selectedcriteria,model_full_path):
     risk_model = get_model_file(model_full_path)
     Result = pd.DataFrame(risk_model.predict(model_input_data))
     score=Result[0][0]
-    print('predicted_score=prediction[0]*100',score)
+    # print('predicted_score=prediction[0]*100',score)
 
     low_risk_threshold=json_data['low_risk_threshold']
     high_risk_threshold= json_data['high_risk_threshold']

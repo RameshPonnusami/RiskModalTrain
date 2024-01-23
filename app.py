@@ -212,11 +212,13 @@ def model_train():
         file_path = request.json.get('file_path')
         column_changes = request.json.get('column_changes')
 
+        app.logger.debug(column_changes)
+
         traindf = pd.read_csv(file_path)
         traindf = fil_none_values(column_changes, traindf)
         # Process the target column as needed
         # For example, print or store the selected target column
-        print('Selected Target Column:', target_column)
+        # print('Selected Target Column:', target_column)
 
 
         traindf = traindf.applymap(convert_to_numeric_or_str)
@@ -485,7 +487,7 @@ def testapi():
     if request.method == 'POST':
         print(request.json)
         return {"msg":"hi"}
-    return render_template('test.html')
+    return render_template('test1.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000,debug=True)
