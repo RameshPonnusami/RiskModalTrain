@@ -1,17 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<!--        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
-<!--<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>-->
-<!--    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>-->
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
-    <title>Risk Score Prediction</title>
+
+
+    {% extends 'header.html' %}
+
+{% block content %}
+     <script src="{{ url_for('static', filename='app.js') }}"></script>
+
     <style>
         #targetColumnForm {
             display: none;
@@ -69,10 +62,52 @@
         margin-right: 15px; /* Add margin between radio buttons and labels */
     }
 
+        #charts-container {
+  display: flex;
+  flex-wrap: wrap; // This allows containers to wrap to next line if needed
+}
+/*
+
+*/
+        .modal-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+.modal-content {
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+        .img{
+            max-width: 100%;
+            height: auto;
+          }
+        .row{
+            width:100%;
+            margin-bottom:10px;
+            border-right: 2px solid black; /* Adjust color and width as needed */
+            border-left: 2px solid black;
+
+            border-top: 2px solid black;
+
+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
+
+        }
+        .col-md-6{
+            text-align:center;
+            padding:6px;
+        }
+
+        .table {
+            width:100% ! important;
+        }
+
+
     </style>
 
-</head>
-<body>
+
     <h1>Risk Score Prediction</h1>
 
     <form id="uploadForm">
@@ -80,7 +115,7 @@
         <button type="button" id="uploadButton">Upload CSV</button>
     </form>
 
-    <div id="first10Records"></div>
+    <div id="first10Records" class="container mt-3" ></div>
 
     <button id="togglebutton" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nanFillContainer" aria-expanded="false" aria-controls="nanFillContainer" style="display: none;">
     Fill Nan Values
@@ -110,42 +145,103 @@
         <div id="step3" style="background-color:#4CAF50;"></div>
     </div>
 
-    <div class="step-container">
+<ul class="nav nav-tabs" id="myTabs">
+    <li class="nav-item">
+        <a class="nav-link active" name="coef-tab" data-toggle="tab" >Coef Table</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="pvalue-tab" data-toggle="tab" >P-Value Table</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="threshold-container-tab" data-toggle="tab">Threshold Container</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="selected-features-details-container-tab" data-toggle="tab" >Selected Features Details Container</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="charts-container-tab" data-toggle="tab"  >Charts Container</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="dynamicFormContainer-tab" data-toggle="tab"  >Dynamic Form Container</a>
+    </li>
+</ul>
 
-
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="coef-tab">
         <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
             <div class="col-md-8 mx-auto bg-white">
-<!--                <h3 class="bg-primary text-center text-white rounded">Coef Table</h3>-->
-                <div id="coef"></div>
+                <div id="coef">1</div>
             </div>
         </div>
-
+    </div>
+    <div class="tab-pane fade" id="pvalue-tab">
         <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
             <div class="col-md-8 mx-auto bg-white">
-<!--                <h3 class="bg-primary text-center text-white rounded">P-Value Table</h3>-->
-                <div id="pvalue"></div>
+                <div id="pvalue">2</div>
             </div>
         </div>
-        <div>
-        <div id="threshold-container"></div>
-            </div>
-<div>
-         <div id="selected-features-details-container"></div>
+    </div>
+    <div class="tab-pane fade" id="threshold-container-tab">
+        <div id="threshold-container">3</div>
+    </div>
+    <div class="tab-pane fade" id="selected-features-details-container-tab">
+        <div id="selected-features-details-container"></div>
+    </div>
+    <div class="tab-pane fade" id="charts-container-tab">
+        <div id="charts-container">
         </div>
-
-
-
-<div id="charts-container"></div>
-
+    </div>
+    <div class="tab-pane fade" id="dynamicFormContainer-tab">
         <div id="dynamicFormContainer"></div>
+    </div>
+</div>
 
-    <!-- Include the dynamicForm.js file -->
+
+    <div id="image-viewer">
+<span class="close">&times;</span>
+<img class="modal-content" id="full-image">
+</div>
+
+ <!-- Include the dynamicForm.js file -->
     <script src="dynamicForm.js"></script>
 
 
 
-    </div>
+<script>
 
 
-</body>
-</html>
+
+$('.tab-content').on('click', 'img', function() {
+  // Your function logic for image click goes here
+  console.log('fissss Image clicked!');
+  $("#full-image").attr("src", $(this).attr("src"));
+    $('#image-viewer').show();
+});
+
+    // Event handler for tab click
+    $("#myTabs a").on("click", function (e) {
+        e.preventDefault();
+        var tabId = $(this).attr("name");
+        console.log(tabId);
+        // Assuming the content for all tabs is already loaded, simply show the tab
+        $('.fade').removeClass("show");
+        $('.fade').removeClass("active");
+        $('#'+tabId).addClass("show");
+        $('#'+tabId).addClass("active");
+        console.log('removed');
+        $(this).tab("show");
+        //$(this).tab("active");
+        //$('#'+tabId).addClass("active");
+
+    });
+
+
+  $("#image-viewer .close").click(function(){
+    $('#image-viewer').hide();
+  })
+    // Initial loading for the active tab
+
+</script>
+
+
+{% endblock %}

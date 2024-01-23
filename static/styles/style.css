@@ -1,7 +1,9 @@
 html {
   height: 100%;
 }
-
+.container{
+    width:100% ! important;
+}
 body {
   background-color: #0d1a33;
   height: 100%;

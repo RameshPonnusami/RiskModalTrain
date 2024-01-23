@@ -6,6 +6,7 @@ $(document).ready(function(){
   $('.table').removeClass('simpletable');
 
   $(".images img").click(function(){
+  console.log('imgclick');
     $("#full-image").attr("src", $(this).attr("src"));
     $('#image-viewer').show();
   });
