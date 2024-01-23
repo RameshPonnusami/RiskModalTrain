@@ -4,6 +4,7 @@
 
 {% block content %}
      <script src="{{ url_for('static', filename='app.js') }}"></script>
+<!--     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>-->
 
     <style>
         #targetColumnForm {
@@ -80,10 +81,7 @@
   animation-duration: 0.6s;
 }
 
-        .img{
-            max-width: 100%;
-            height: auto;
-          }
+
         .row{
             width:100%;
             margin-bottom:10px;
@@ -92,7 +90,7 @@
 
             border-top: 2px solid black;
 
-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
+
 
         }
         .col-md-6{
@@ -103,7 +101,9 @@ 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
         .table {
             width:100% ! important;
         }
-
+#first10Records {
+  overflow-x: auto; /* Enable horizontal scrollbar if content overflows */
+}
 
     </style>
 
@@ -135,9 +135,15 @@ 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
     <div id="targetColumnForm">
         <label for="targetColumnSelect">Select Target Column:</label>
         <select id="targetColumnSelect"></select>
-        <button type="button" id="selectTargetColumnButton">Select Target Column</button>
+        <button type="button" id="selectTargetColumnButton">Train Model</button>
     </div>
 
+
+
+
+<div id="loader" style="display: none; text-align: center;">
+  <img src="static/gifs/Blinkingsquares.gif" alt="Loading...">
+</div>
      <!-- Progress bar -->
     <div id="progress-bar">
         <div id="step1" style="background-color:#4CAF50;"></div>

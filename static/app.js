@@ -55,12 +55,12 @@ var columnsTypeData ;
     function generateTableFromDF(columns,records )
     {
         // Update the UI with the first 10 records as a table
-        var tableHtml = ' <div class="table-responsive">         <table class="table table-bordered"> <table border="1"><thead><tr>';
+        var tableHtml = '<table class="table table-bordered table-striped table-responsive" border="1"><thead><tr>';
 
         // Generate table header from column names
         columns.forEach(column => {
-        tableHtml += `<th style="border: 1px solid #ddd; width: 150px; padding: 10px;">${column}</th>`;
-    });
+            tableHtml += `<th>${column}</th>`;
+        });
 
         tableHtml += '</tr></thead><tbody>';
 
@@ -68,13 +68,12 @@ var columnsTypeData ;
         records.forEach(record => {
             tableHtml += '<tr>';
             columns.forEach(column => {
-            tableHtml += `<td style="border: 1px solid #ddd; width: 150px; padding: 10px;">${record[column]}</td>`;
-                });
+                tableHtml += `<td>${record[column]}</td>`;
+            });
             tableHtml += '</tr>';
         });
 
         tableHtml += '</tbody></table>';
-         tableHtml += '</div>';
         return tableHtml;
     }
 
@@ -271,7 +270,6 @@ console.log(entryContainerImg.outerHTML);
 //    }
   }
 }
-
 
 
 function generate_user_input_form(data,object_unique_data,SelectedfeaturesDetails,model_full_path,std_dev,low_risk_threshold,high_risk_threshold){
@@ -486,6 +484,7 @@ console.log('data',model_full_path);
 
 
         var selectedTargetColumn = $('#targetColumnSelect').val();
+         $("#loader").show();
 
         $.ajax({
             url: '/model_train',
@@ -537,12 +536,14 @@ console.log('data',model_full_path);
                                     SelectedfeaturesDetails,model_full_path,std_dev,low_risk_threshold,high_risk_threshold)
 
 
-
+                 $("#loader").hide();
                 // Handle the response as needed
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error selecting target column:', textStatus, errorThrown);
+                 $("#loader").hide();
             }
+
         });
     });
 });
