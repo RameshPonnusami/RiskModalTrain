@@ -115,10 +115,16 @@
       margin-right: 20px; /* Adjust the margin as needed */
     }
 
+        #myTabs {
+    background-color: #007bff;
+      font-color: white;/* Set your preferred background color */
+}
+         #myTabs .nav-link {
+        color: #1e1919 !important;
+    }
+
 
     </style>
-
-
 
     <h1>Risk Score Prediction</h1>
 
@@ -130,16 +136,12 @@
     <div id="first10Records" class="container-fluid" ></div>
 
     <button id="togglebutton" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nanFillContainer" aria-expanded="false" aria-controls="nanFillContainer" style="display: none;">
-    Fill Nan Values
+    Missing Data Handling
 </button>
-
-
-
-
 
 <div id="nanFillContainer" class="tables-container  collapse ml-0">
   <div class="numeric-table-container">
-        <h2> Numeric Feilds</h2>
+        <h2> Numeric Fields</h2>
     <table class="table table-bordered">
     <thead>
       <tr>
@@ -157,7 +159,7 @@
 </div>
 
 <div class="categorical-table-container">
-    <h2> Categorical Feilds</h2>
+    <h2> Categorical Fields</h2>
   <table class="table table-bordered">
     <thead>
       <tr>
@@ -197,7 +199,7 @@
         <div id="step3" style="background-color:#4CAF50;"></div>
     </div>
 
-<ul class="nav nav-tabs" id="myTabs">
+<ul class="nav nav-tabs sticky-top" id="myTabs">
 
     <li class="nav-item">
         <a class="nav-link" name="threshold-container-tab" data-toggle="tab">Threshold</a>
@@ -215,8 +217,18 @@
 <!--        <a class="nav-link" name="pvalue-tab" data-toggle="tab" >P-Value </a>-->
 <!--    </li>-->
     <li class="nav-item">
-        <a class="nav-link" name="dynamicFormContainer-tab" data-toggle="tab"  >Dynamic Form </a>
+        <a class="nav-link" name="dynamicFormContainer-tab" data-toggle="tab"  >Get Score </a>
     </li>
+
+    <li class="nav-item">
+        <a class="nav-link" name="testdata-container-tab" data-toggle="tab"  >Test-Data </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" name="traindata-container-tab" data-toggle="tab"  >Train-Data </a>
+    </li>
+
+
 </ul>
 
 <div class="tab-content">
@@ -254,14 +266,21 @@
         </div>
     </div>
 
+    <div class="tab-pane fade" id="testdata-container-tab">
+        <div id="testdata-container">
+        </div>
+         <div id="testdata-charts-container">
+        </div>
+    </div>
+    <div class="tab-pane fade" id="traindata-container-tab">
+        <div id="traindata-container">
+        </div>
+         <div id="traindata-charts-container">
+        </div>
+    </div>
 
-<!--    <div class="tab-pane fade w-50 mx-auto" id="dynamicFormContainer-tab">-->
-<!--        <div id="dynamicFormContainer"></div>-->
-<!--            <div id="predictedResult" class="col-md-6 bg-light">-->
 
 
-<!--            </div>-->
-<!--        </div>-->
 </div>
 
 
@@ -307,6 +326,7 @@ $('.tab-content').on('click', 'img', function() {
     $('#image-viewer').hide();
   })
     // Initial loading for the active tab
+
 
 </script>
 

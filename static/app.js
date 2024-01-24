@@ -463,7 +463,7 @@ console.log('data',model_full_path);
                         '<div class="succes border-bottom"></div>';
         }else if(Color==='Red'){
          csscolorClass = 'bg-lightred';
-         cssMsg = 'Financials are sufficient';
+         cssMsg = 'Financials are in-sufficient';
           cssWarningClass = '<div class="danger danger-animation icon-top"><i class="fa fa-times"></i></div>,'+
                         '<div class="danger border-bottom"></div>';
         }else {
@@ -586,11 +586,28 @@ console.log('data',model_full_path);
                 var low_risk_threshold = response.low_risk_threshold;      // Replace with the actual key in your response
                 var high_risk_threshold = response.high_risk_threshold;      // Replace with the actual key in your response
                 var std_dev = response.std_dev;      // Replace with the actual key in your response
+                var testdecile = response.testdecile;      // Replace with the actual key in your response
+                var test_decile_chart = response.decile_chart;      // Replace with the actual key in your response
                  var htmlTable = generateTable(coef);
                   $('#coef').html(htmlTable);
 
                   var pvhtmlTable = generateTable(pvalue);
                   $('#pvalue').html(pvhtmlTable);
+                  var testdecilehtmlTable = generateTable(testdecile);
+                  $('#testdata-container').html(testdecilehtmlTable);
+                  var traindecilehtmlTable = generateTable(response.trainDecileWithScore);
+                  $('#traindata-container').html(traindecilehtmlTable);
+
+                    var containerDiv = document.getElementById('testdata-charts-container');
+                    var imgElement = document.createElement('img');
+                    imgElement.src = test_decile_chart;
+                    containerDiv.appendChild(imgElement);
+                    var traincontainerDiv = document.getElementById('traindata-charts-container');
+                    var imgElement = document.createElement('img');
+                    imgElement.src = response.trainDecileChart;
+                    traincontainerDiv.appendChild(imgElement);
+
+
 
                   var thresholdTable = generateDictTable(response.threshold);
 

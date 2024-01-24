@@ -271,6 +271,10 @@ def model_train():
                            "low_risk_threshold":performance_metrics_dict['low_risk_threshold'],
                             "high_risk_threshold":performance_metrics_dict['high_risk_threshold'],
                             "std_dev":performance_metrics_dict['std_dev'],
+                           "testdecile": performance_metrics_dict['testdecile'].to_dict(orient='records'),
+                           "decile_chart": performance_metrics_dict['decile_chart'],
+                           "trainDecileWithScore": performance_metrics_dict['trainDecileWithScore'].to_dict(orient='records'),
+                           "trainDecileChart": performance_metrics_dict['trainDecileChart'],
                            },default=custom_encoder)
 
     else:

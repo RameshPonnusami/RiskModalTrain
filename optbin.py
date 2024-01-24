@@ -11,6 +11,8 @@ import seaborn as sns
 from datetime import datetime
 import joblib
 import os
+from generate_chart import plot_regression_decile, plot_test_decile
+
 
 def parse_interval(interval_str):
     interval_str = interval_str.replace('(', '').replace(')', '').replace('[', '').replace(']', '')
@@ -31,8 +33,6 @@ def generate_selected_features(selected_features, selected_features_bin):
             selected_bin_values = np.concatenate(temp_df['Bin'].values)
             selected_features_and_bin_data['criteria'] = list(selected_bin_values)
         if column_type == 'numerical':
-            # temp_df['Bin']
-            # Apply the function to the 'interval_column' and create a new column 'interval_list'
             temp_df['Bin_list'] = temp_df['Bin'].apply(parse_interval)
             # Convert the 'interval_list' column into a single flat list
             flat_list = [item for sublist in temp_df['Bin_list'] for item in sublist]
@@ -42,9 +42,9 @@ def generate_selected_features(selected_features, selected_features_bin):
         selected_features_and_bin_data_list.append(selected_features_and_bin_data)
     return selected_features_and_bin_data_list
 
+
 def format_criteria_for_ui(selected_features_details_list):
     for lv in selected_features_details_list:
-        column_name = lv['name']
         column_type = lv['type']
         criteria = lv['criteria']
         if column_type == 'categorical':
@@ -52,17 +52,17 @@ def format_criteria_for_ui(selected_features_details_list):
             format_list = criteria
         if column_type == 'numerical':
             if np.inf in criteria:
-                string_value = 'greater than '+str( criteria[0])
-                format_list = [ criteria[0],'Above' ]
+                string_value = 'greater than ' + str(criteria[0])
+                format_list = [criteria[0], 'Above']
             elif -np.inf in criteria:
                 string_value = 'lesser than ' + str(criteria[1])
-                format_list = [ 'Below',criteria[1]]
+                format_list = ['Below', criteria[1]]
             else:
-                string_value = 'between '+str(criteria[0]) +' to '+ str(criteria[1])
-            lv['Impact Criteria']=string_value
+                string_value = 'between ' + str(criteria[0]) + ' to ' + str(criteria[1])
+            lv['Impact Criteria'] = string_value
             lv['criteria'] = format_list
-        # del lv['criteria']
     return selected_features_details_list
+
 
 def do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_data):
     for lv in selected_features_and_bin_data_list:
@@ -79,13 +79,26 @@ def do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_d
                 model_input_data[column_name] = [1 if x <= criteria[1] else 0 for x in
                                                  model_input_data[column_name]]
             else:
-                model_input_data[column_name] = [1 if x>=criteria[0] and  x<=criteria[1] else 0 for x in
+                model_input_data[column_name] = [1 if x >= criteria[0] and x <= criteria[1] else 0 for x in
                                                  model_input_data[column_name]]
     return model_input_data
 
-def performance_metrics(log_reg,X_test,y_test):
+
+def predict_bulk_df(test_df, target_column, log_reg):
+    X_test = test_df.drop(target_column, axis=1)  # Adjust the column name accordingly
+    sc = X_test.columns
+    y_test = test_df[target_column]
     y_pred = log_reg.predict(X_test)
     y_pred_binary = (y_pred >= 0.5).astype(int)
+    op_cl = 'PredictionProbability'
+    test_df[op_cl] = y_pred
+    print(len(y_pred))
+    return test_df, y_test, y_pred_binary, sc, y_pred
+
+
+def performance_metrics(log_reg, test_df, target_column):
+    test_df, y_test, y_pred_binary, sc,y_pred = predict_bulk_df(test_df, target_column, log_reg)
+    save_path, FinResultDf = plot_test_decile(test_df, sc, target_column)
     # Compute confusion matrix
     cm = confusion_matrix(y_test, y_pred_binary)
 
@@ -115,31 +128,24 @@ def performance_metrics(log_reg,X_test,y_test):
     high_risk_threshold = np.mean(y_pred_list) + 0.5 * std_dev
 
     performance_metrics_dict = {
-        "accuracy":accuracy,
-        "precision":precision,
-        "recall":recall,
-        "f1_score":f1_score,
-        "cm":cm,
-        "low_risk_threshold":low_risk_threshold,
-        "high_risk_threshold":high_risk_threshold,
-        "std_dev":std_dev
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1_score": f1_score,
+        "cm": cm,
+        "low_risk_threshold": low_risk_threshold,
+        "high_risk_threshold": high_risk_threshold,
+        "std_dev": std_dev,
+        "testdecile": FinResultDf,
+        "decile_chart": save_path
     }
 
     return performance_metrics_dict
 
-def process_train_data(traindf, target_column):
-    # target_column = 'bad_loan'
-    threshold = {"Total Records": len(traindf[target_column]),
-                 "Target Count": len(traindf[traindf[target_column] == 1]),
-                 "Risk Average": (len(traindf[traindf[target_column] == 1]) / len(traindf)),
-                 "Risk Percentage": (len(traindf[traindf[target_column] == 1]) / len(traindf)) * 100
-                 }
 
-    # print(threshold)
-
-    variable_names = list(traindf.columns[1:])
+def process_opt_bin(variable_names, traindf, threshold, target):
     X = traindf[variable_names]
-    target = "bad_loan"
+
     y = traindf[target].values
 
     selection_criteria = {
@@ -175,12 +181,47 @@ def process_train_data(traindf, target_column):
     selected_features = feature_details[feature_details['selected'] == True]
     # print(selected_features)
 
+    return selected_features, selected_features_bin
+
+
+def split_train_test_dataset(traindf, target_column, test_size=0.2):
+    # Specify your features (X) and target variable (y)
+    X = traindf.drop(target_column, axis=1)  # Adjust the column name accordingly
+    y = traindf[target_column]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
+    # model_train_data
+    ipdata = X_train.copy()
+    ipdata[target_column] = y_train
+
+    # model test data
+    ip_test_data = X_test.copy()
+    ip_test_data[target_column] = y_test
+
+    return ipdata, ip_test_data
+
+
+def process_train_data(traindf, target_column):
+    # target_column = 'bad_loan'
+
+    ipdata, ip_test_data = split_train_test_dataset(traindf, target_column, test_size=0.2)
+
+    threshold = {"Total Records": len(ipdata[target_column]),
+                 "Target Count": len(ipdata[ipdata[target_column] == 1]),
+                 "Risk Average": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)),
+                 "Risk Percentage": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)) * 100
+                 }
+
+    variable_names = list(ipdata.columns[1:])
+    target = target_column
+
+    # Analysis the Optimal Binning and get Report
+    selected_features, selected_features_bin = process_opt_bin(variable_names, ipdata, threshold, target)
     selected_features_names = selected_features['name'].unique()
 
     selected_features_and_bin_data_list = generate_selected_features(selected_features, selected_features_bin)
     selected_features_names_with_target = np.append(selected_features_names, target)
 
-    model_input_data = traindf[selected_features_names_with_target].copy()
+    model_input_data = ipdata[selected_features_names_with_target].copy()
 
     model_input_data = do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_data)
 
@@ -191,34 +232,44 @@ def process_train_data(traindf, target_column):
                                      axis=1)  # Adjust 'target_variable_name' to your actual target variable
     labels = model_input_data[target]
 
-    # Split the dataset into training and testing sets (80% train, 20% test)
-    X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
-
-    # model_train_data
-    ipdata = X_train.copy()
-    ipdata[target] = y_train
-    ipdata = ipdata.dropna()
+    # # Split the dataset into training and testing sets (80% train, 20% test)
+    # X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
+    #
+    # # model_train_data
+    # ipdata = X_train.copy()
+    # ipdata[target] = y_train
+    model_input_data = model_input_data.dropna()
 
     logit_str = target + " ~ " + features_string
+    log_reg = smf.logit(logit_str, data=model_input_data).fit()
 
+    train_df_score, y_test, y_pred_binary, sc, y_pred = predict_bulk_df(model_input_data, target_column, log_reg)
+    save_path, DecileScoreDf = plot_test_decile(train_df_score, sc, target_column)
 
-    log_reg = smf.logit(logit_str, data=ipdata).fit()
-    performance_metrics_dict = performance_metrics(log_reg, X_test, y_test)
+    model_ip_test_data = do_manual_optimal_binning(selected_features_and_bin_data_list, ip_test_data)
+
+    performance_metrics_dict = performance_metrics(log_reg, model_ip_test_data[selected_features_names_with_target],
+                                                   target_column)
+    performance_metrics_dict['trainDecileWithScore']=DecileScoreDf
+    performance_metrics_dict['trainDecileChart']=save_path
+    # performance_metrics_dict = performance_metrics(log_reg, X_test, y_test)
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     model_filename = f'model_{timestamp}.joblib'
     model_full_path = os.path.join('static', 'trained_model', model_filename)
 
     joblib.dump(log_reg, model_full_path)
-    return (logit_str, log_reg, threshold, selected_features_names_with_target,selected_features_and_bin_data_list,
-            performance_metrics_dict,model_full_path)
+    return (logit_str, log_reg, threshold, selected_features_names_with_target, selected_features_and_bin_data_list,
+            performance_metrics_dict, model_full_path)
+
 
 def get_model_file(model_path):
     return joblib.load(model_path)
-def predict_score(json_data,selectedcriteria,model_full_path):
-    input_dict ={}
-    # print(json_data)
+
+
+def predict_score(json_data, selectedcriteria, model_full_path):
+    input_dict = {}
     for rj in selectedcriteria:
-        cname= rj['name']
+        cname = rj['name']
         ctype = rj['type']
         if ctype == 'numerical':
             input_dict[cname] = float(json_data[cname])
@@ -227,29 +278,22 @@ def predict_score(json_data,selectedcriteria,model_full_path):
 
     input_df = pd.DataFrame([input_dict])
     for iv in selectedcriteria:
-        if 'Above' in  iv['criteria']:
+        if 'Above' in iv['criteria']:
             updated_list = [np.inf if item == 'Above' else item for item in iv['criteria']]
             iv['criteria'] = updated_list
         elif 'Below' in iv['criteria']:
             updated_list = [-np.inf if item == 'Below' else item for item in iv['criteria']]
-            iv['criteria']=updated_list
-    # print(selectedcriteria)
+            iv['criteria'] = updated_list
     model_input_data = do_manual_optimal_binning(selectedcriteria, input_df)
     risk_model = get_model_file(model_full_path)
     Result = pd.DataFrame(risk_model.predict(model_input_data))
-    score=Result[0][0]
-    # print('predicted_score=prediction[0]*100',score)
+    score = Result[0][0]
 
-    low_risk_threshold=json_data['low_risk_threshold']
-    high_risk_threshold= json_data['high_risk_threshold']
-
+    low_risk_threshold = json_data['low_risk_threshold']
+    high_risk_threshold = json_data['high_risk_threshold']
 
     # Assign risk categories
-    risk_cat = 'Green' if score < float(low_risk_threshold) else 'Yellow' if float(low_risk_threshold) <= score <= float(high_risk_threshold) else 'Red'
-    score_percentage = score*100
+    risk_cat = 'Green' if score < float(low_risk_threshold) else 'Yellow' if float(
+        low_risk_threshold) <= score <= float(high_risk_threshold) else 'Red'
+    score_percentage = score * 100
     return score_percentage, risk_cat
-
-
-
-
-

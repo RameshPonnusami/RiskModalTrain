@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 import os
 import numpy as np
-
+from datetime import datetime
 
 def identify_data_types(df):
     # Selecting categorical columns
@@ -15,8 +15,12 @@ def identify_data_types(df):
     return categorical_columns, numeric_columns
 
 
-def get_save_path(filename):
-    file_full_path = os.path.join('static', 'charts', filename)
+def get_save_path(filename,addtime=False):
+    if addtime:
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    else:
+        timestamp=''
+    file_full_path = os.path.join('static', 'charts', str(timestamp)+filename)
     return file_full_path
 
 
@@ -46,7 +50,7 @@ def plot_bar_chart(findf, bin_column_name, target_percentage, target_label, save
 def plot_diagram(column_name, npa_df, target, fig_size=None):
     mean_column_name = column_name + 'mean'
 
-    print(column_name)
+    # print(column_name)
 
     LapsUpdated = pd.DataFrame()
 
@@ -134,7 +138,7 @@ def plot_regression_decile(column, final_df, target, additional_columns=[]):
         FinalDataFrame[ad_per] = FinalDataFrame[ad_per].astype(np.float128)
 
     FinalDataFrame.rename(columns={target_sum: target + ' total', target_count: 'Total Records'}, inplace=True)
-
+    FinalDataFrame.sort_values(by=[tar_percentage], ascending=False, inplace=True)
     reg = LinearRegression()
     reg.fit(FinalDataFrame[[column_mean]], FinalDataFrame[tar_percentage])
     reg.predict(FinalDataFrame[[column_mean]])
@@ -197,3 +201,72 @@ def process_charts(df, target_column):
     all_chart_details['bar_chart'] = bar_chart_details_list
     all_chart_details['failed_features'] = failed_columns
     return all_chart_details
+
+
+def change_type_to_int(base_df):
+    cls = ['balance probability min',
+           'balance probability max',
+           'balance probability mean',
+           'balance min',
+           'balance max',
+           'balance mean']
+    for cl in cls:
+        base_df[cl] = base_df[cl].astype(int)
+    return base_df
+
+def format_the_column(ip_df):
+    f_columns = []
+    for ip in ip_df.columns:
+        v = ip.replace('-','').replace(' ','').replace('(','').replace (')','').replace('/','_').replace('%',
+                                                                               ')'
+                                                                               ).replace('_ ','').replace('.','_')
+        v=v.replace('min', ' min').replace('max', ' max').replace('mean',' mean').replace('PredictionProbability',
+                                                                                         'Prediction Probability')
+        f_columns.append(v)
+    return ip_df.rename(columns={ip: v for ip, v in zip(ip_df.columns, f_columns)})
+
+def round_df_value(FinalDataFrame):
+    for cl in list(FinalDataFrame.columns):
+        try:
+            if FinalDataFrame[cl].dtype == 'float64':
+                FinalDataFrame[cl] = FinalDataFrame[cl].round(2)
+        except:
+            pass
+    return FinalDataFrame
+
+def plot_test_decile(rawdata,selected_columns,target_column, orderby_feild = 'PredictionProbability'):
+    orderby_feild_mean = orderby_feild+ 'mean'
+    target_cl = target_column
+    target_mean = target_cl+ 'mean'
+    condition_dict = {target_cl: ['sum', 'count', 'mean'], 'PredictionProbability': ['min', 'max', 'mean']
+                      }
+    for sc in selected_columns:
+        if sc not in [target_cl]:
+            condition_dict[sc]=['mean']
+    GrandTotal=rawdata.sort_values (by=[orderby_feild], ascending=False)
+    GrandTotal['Decile_rank'] = pd.qcut (GrandTotal[orderby_feild].rank (method='first'), 10, labels = False)
+    FinalDataFrame=GrandTotal.groupby("Decile_rank").agg (condition_dict)
+    FinalDataFrame.columns=["".join(j) for j in list (FinalDataFrame.columns)]
+    FinalDataFrame.reset_index (inplace=True)
+    #print (FinalDataFrame.columns)
+    # FinalDataFrame["Percentage"]=FinalDataFrame["StarLabelsum"]/FinalDataFrame["StarLabelcount"]*100
+    FinalDataFrame [target_mean] =FinalDataFrame [target_mean] *100
+    FinalDataFrame.sort_values(by=[orderby_feild_mean], ascending=False, inplace=True)
+
+    reg = LinearRegression()
+    reg.fit(FinalDataFrame[["PredictionProbabilitymean"]], FinalDataFrame[target_mean])
+    reg.predict(FinalDataFrame[["PredictionProbabilitymean"]])
+    plt.title("PredictionProbability")
+    plt.xlabel("PredictionProbabilitymean")
+    plt.ylabel(target_mean)
+
+    plt.scatter(FinalDataFrame[["PredictionProbabilitymean"]], FinalDataFrame[target_mean], color="red", marker="+")
+    plt.plot(FinalDataFrame[["PredictionProbabilitymean"]], reg.predict(FinalDataFrame[["PredictionProbabilitymean"]]), color='blue')
+    save_path = get_save_path(str(target_mean) + '.png')
+    plt.savefig(save_path, bbox_inches='tight', pad_inches=0.1)
+    #FinalDataFrame.columns=total_mean_list
+    FinalDataFrame_ = format_the_column(FinalDataFrame.copy())
+    # FinalDataFrame = change_type_to_int (FinalDataFrame_)
+    plt.close()
+    FinalDataFrame_ = round_df_value(FinalDataFrame_)
+    return save_path ,FinalDataFrame_
