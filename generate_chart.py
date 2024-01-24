@@ -4,6 +4,7 @@ from sklearn.linear_model import LinearRegression
 import os
 import numpy as np
 from datetime import datetime
+import seaborn as sns
 
 def identify_data_types(df):
     # Selecting categorical columns
@@ -270,3 +271,28 @@ def plot_test_decile(rawdata,selected_columns,target_column, orderby_feild = 'Pr
     plt.close()
     FinalDataFrame_ = round_df_value(FinalDataFrame_)
     return save_path ,FinalDataFrame_
+
+def get_corr(df):
+    numeric_columns = df.select_dtypes(include='number').columns
+    categorical_columns = df.select_dtypes(exclude='number').columns
+
+    # Encode categorical variables (convert them to numerical values)
+    df_encoded = pd.get_dummies(df, columns=categorical_columns)
+
+    # Calculate the correlation matrix
+    corr_matrix = df_encoded.corr()
+
+    print(corr_matrix)
+
+    return corr_matrix
+
+def plot_heat_map(cm_df):
+    plt.figure(figsize=(5, 4))
+    print(cm_df)
+    sns.heatmap(cm_df, annot=True)
+    plt.title('Correlation')
+    save_path = get_save_path(str('correlation') + '.png',addtime=True)
+    plt.savefig(save_path, bbox_inches='tight', pad_inches=0.1)
+    plt.close()
+    return save_path
+

@@ -275,6 +275,9 @@ def model_train():
                            "decile_chart": performance_metrics_dict['decile_chart'],
                            "trainDecileWithScore": performance_metrics_dict['trainDecileWithScore'].to_dict(orient='records'),
                            "trainDecileChart": performance_metrics_dict['trainDecileChart'],
+                           "dsa_dict": performance_metrics_dict['dsa_dict'],
+                           "corr_model_ip_img_path": performance_metrics_dict['corr_model_ip_img_path'],
+                           "corr_ip_img_path": performance_metrics_dict['corr_ip_img_path'],
                            },default=custom_encoder)
 
     else:

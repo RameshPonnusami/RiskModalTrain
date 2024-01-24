@@ -44,6 +44,7 @@ body {
   color: #a90329;
 }
 
+
 .btn-green {
   background-color: #007f2c;
 }
@@ -215,7 +216,7 @@ img:hover {opacity: 0.7;}
 #image-viewer {
   display: none;
   position: fixed;
-  z-index: 1;
+  z-index: 9999;
   padding-top: 100px;
   left: 0;
   top: 0;

@@ -11,7 +11,7 @@ import seaborn as sns
 from datetime import datetime
 import joblib
 import os
-from generate_chart import plot_regression_decile, plot_test_decile
+from generate_chart import plot_regression_decile, plot_test_decile, plot_heat_map, get_corr
 
 
 def parse_interval(interval_str):
@@ -199,6 +199,10 @@ def split_train_test_dataset(traindf, target_column, test_size=0.2):
 
     return ipdata, ip_test_data
 
+def get_dsa(ipdf):
+    de = ipdf.describe().T.reset_index()
+    de.rename(columns={"index":"FieldName"},inplace=True)
+    return de.to_dict('records')
 
 def process_train_data(traindf, target_column):
     # target_column = 'bad_loan'
@@ -221,9 +225,15 @@ def process_train_data(traindf, target_column):
     selected_features_and_bin_data_list = generate_selected_features(selected_features, selected_features_bin)
     selected_features_names_with_target = np.append(selected_features_names, target)
 
+    dsa_dict = get_dsa(ipdata)
+
+    corr_ip_img_path = plot_heat_map(get_corr(ipdata))
+
     model_input_data = ipdata[selected_features_names_with_target].copy()
 
     model_input_data = do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_data)
+
+    corr_model_ip_img_path = plot_heat_map(model_input_data.corr())
 
     features_string = '+'.join(selected_features_names)
 
@@ -252,6 +262,9 @@ def process_train_data(traindf, target_column):
                                                    target_column)
     performance_metrics_dict['trainDecileWithScore']=DecileScoreDf
     performance_metrics_dict['trainDecileChart']=save_path
+    performance_metrics_dict['dsa_dict']=dsa_dict
+    performance_metrics_dict['corr_model_ip_img_path']=corr_model_ip_img_path
+    performance_metrics_dict['corr_ip_img_path']=corr_ip_img_path
     # performance_metrics_dict = performance_metrics(log_reg, X_test, y_test)
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     model_filename = f'model_{timestamp}.joblib'

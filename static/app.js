@@ -553,6 +553,13 @@ console.log('data',model_full_path);
                 return '';
             }
 
+            function appendImgWithDiv(div_id,content){
+                    var CorcontainerDiv = document.getElementById(div_id);
+                    var imgElement = document.createElement('img');
+                    imgElement.src = content;
+                    CorcontainerDiv.appendChild(imgElement);
+            }
+
 
  // Function to remove a specific key from a dictionary
     const removeKeyFromDict = (dict, keyToRemove) => {
@@ -597,6 +604,8 @@ console.log('data',model_full_path);
                   $('#testdata-container').html(testdecilehtmlTable);
                   var traindecilehtmlTable = generateTable(response.trainDecileWithScore);
                   $('#traindata-container').html(traindecilehtmlTable);
+                  var dsahtmlTable = generateTable(response.dsa_dict);
+                  $('#dsa-container').html(dsahtmlTable);
 
                     var containerDiv = document.getElementById('testdata-charts-container');
                     var imgElement = document.createElement('img');
@@ -606,6 +615,12 @@ console.log('data',model_full_path);
                     var imgElement = document.createElement('img');
                     imgElement.src = response.trainDecileChart;
                     traincontainerDiv.appendChild(imgElement);
+
+//                    appendImgWithDiv('corr-charts-container',response.corr_ip_img_path);
+
+                     appendImgWithDiv('after-corr-charts-container',response.corr_model_ip_img_path);
+
+
 
 
 
