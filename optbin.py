@@ -124,14 +124,7 @@ def performance_metrics(log_reg,X_test,y_test):
         "high_risk_threshold":high_risk_threshold,
         "std_dev":std_dev
     }
-    # Display confusion matrix using seaborn
-    # plt.figure(figsize=(8, 6))
-    # sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Predicted 0', 'Predicted 1'],
-    #             yticklabels=['Actual 0', 'Actual 1'])
-    # plt.xlabel('Predicted Label')
-    # plt.ylabel('True Label')
-    # plt.title('Confusion Matrix')
-    # plt.show()std_dev
+
     return performance_metrics_dict
 
 def process_train_data(traindf, target_column):
