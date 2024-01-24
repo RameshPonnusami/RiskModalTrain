@@ -275,20 +275,15 @@ def plot_test_decile(rawdata,selected_columns,target_column, orderby_feild = 'Pr
 def get_corr(df):
     numeric_columns = df.select_dtypes(include='number').columns
     categorical_columns = df.select_dtypes(exclude='number').columns
-
+    df.fillna(0,inplace=True)
     # Encode categorical variables (convert them to numerical values)
     df_encoded = pd.get_dummies(df, columns=categorical_columns)
-
     # Calculate the correlation matrix
     corr_matrix = df_encoded.corr()
-
-    print(corr_matrix)
-
     return corr_matrix
 
 def plot_heat_map(cm_df):
     plt.figure(figsize=(5, 4))
-    print(cm_df)
     sns.heatmap(cm_df, annot=True)
     plt.title('Correlation')
     save_path = get_save_path(str('correlation') + '.png',addtime=True)

@@ -264,3 +264,28 @@ img:hover {opacity: 0.7;}
 .form-label{
   margin-top:5px;
 }
+
+#after-corr-charts-container table th,
+#after-corr-charts-container table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+#before-corr-charts-container table th,
+#before-corr-charts-container table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+
+
+ /* Define colors for heatmap as CSS classes */
+    .heatmap-cell-1 { background-color: #d0e8ff; } /* Light Blue */
+    .heatmap-cell-2 { background-color: #81b9e1; } /* Blue */
+    .heatmap-cell-3 { background-color: #4180c8; } /* Dark Blue */
+    .heatmap-cell-4 { background-color: #1a478f; } /* Navy Blue */
+    .heatmap-cell-5 { background-color: #5262b1; } /* Light Red */
+    .heatmap-cell-6 { background-color: #737683; } /* Red */
+

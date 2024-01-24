@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 import joblib
-import os
+import os, json
 from generate_chart import plot_regression_decile, plot_test_decile, plot_heat_map, get_corr
 
 
@@ -226,14 +226,21 @@ def process_train_data(traindf, target_column):
     selected_features_names_with_target = np.append(selected_features_names, target)
 
     dsa_dict = get_dsa(ipdata)
+    corr_df = get_corr(ipdata)
+    corr_df.fillna(0,inplace=True)
+    corr_ip_df= corr_df.reset_index()
 
-    corr_ip_img_path = plot_heat_map(get_corr(ipdata))
+
 
     model_input_data = ipdata[selected_features_names_with_target].copy()
 
     model_input_data = do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_data)
 
-    corr_model_ip_img_path = plot_heat_map(model_input_data.corr())
+    # corr_model_ip_img_path = plot_heat_map(model_input_data.corr())
+    corr_df = model_input_data.corr()
+    corr_df.fillna(0,inplace=True)
+    corr_df_ = corr_df.reset_index()
+
 
     features_string = '+'.join(selected_features_names)
 
@@ -263,8 +270,8 @@ def process_train_data(traindf, target_column):
     performance_metrics_dict['trainDecileWithScore']=DecileScoreDf
     performance_metrics_dict['trainDecileChart']=save_path
     performance_metrics_dict['dsa_dict']=dsa_dict
-    performance_metrics_dict['corr_model_ip_img_path']=corr_model_ip_img_path
-    performance_metrics_dict['corr_ip_img_path']=corr_ip_img_path
+    performance_metrics_dict['corr_df_after_bin']=corr_df_
+    performance_metrics_dict['corr_df_before_bin']=corr_ip_df
     # performance_metrics_dict = performance_metrics(log_reg, X_test, y_test)
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     model_filename = f'model_{timestamp}.joblib'

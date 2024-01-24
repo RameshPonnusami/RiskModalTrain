@@ -3,184 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NaN Fill UI</title>
-  <!-- Include Bootstrap CSS from CDN for styling -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
+  <title>Correlation Heatmap</title>
   <style>
-    .tables-container {
-      display: flex;
+    /* Add some basic styling */
+    body {
+      font-family: Arial, sans-serif;
     }
 
-    .numeric-table-container,
-    .categorical-table-container {
-      flex: 1;
-      margin-right: 20px; /* Adjust the margin as needed */
+    table {
+      border-collapse: collapse;
+      width: 100%;
     }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    /* Define colors for heatmap as CSS classes */
+    .heatmap-cell-1 { background-color: #d0e8ff; } /* Light Blue */
+    .heatmap-cell-2 { background-color: #81b9e1; } /* Blue */
+    .heatmap-cell-3 { background-color: #4180c8; } /* Dark Blue */
+    .heatmap-cell-4 { background-color: #1a478f; } /* Navy Blue */
+    .heatmap-cell-5 { background-color: #5262b1; } /* Light Red */
+    .heatmap-cell-6 { background-color: #737683; } /* Red */
   </style>
+</head>
 <body>
 
-<div class="tables-container">
-  <div class="numeric-table-container">
-    <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Column Name</th>
-        <th>Do Nothing</th>
-        <th>Mean</th>
-        <th>Zero</th>
-        <th>Manual Input</th>
-        <th>Manual Value</th>
-      </tr>
-    </thead>
-    <tbody id="numeric-table-body">
-    </tbody>
-  </table>
-</div>
-
-<div class="categorical-table-container">
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Column Name</th>
-        <th>Do Nothing</th>
-        <th>Manual Input</th>
-        <th>Manual Value</th>
-      </tr>
-    </thead>
-    <tbody id="categorical-table-body">
-    </tbody>
-  </table>
-
-</div>
-</div>
-
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const columnsData = {
-    "annual_inc": "numeric",
-    "bad_loan": "numeric",
-    "dti": "numeric",
-    "emp_length_num": "numeric",
-    "grade": "categorical",
-    "home_ownership": "categorical",
-    "id": "numeric",
-    "last_delinq_none": "numeric",
-    "last_major_derog_none": "categorical",
-    "od_ratio": "numeric",
-    "purpose": "categorical",
-    "revol_util": "numeric",
-    "short_emp": "numeric",
-    "term": "categorical",
-    "total_rec_late_fee": "numeric"
-  };
+  function generateTable(data) {
+    var table = '<table>';
 
-  createColumnOptions(columnsData, 'numeric-table-body', 'numeric');
-  createColumnOptions(columnsData, 'categorical-table-body', 'categorical');
+    // Create table header
+    table += '<thead><tr><th></th>';
+    for (var i = 0; i < data.length; i++) {
+      table += '<th>' + data[i]['index'] + '</th>';
+    }
+    table += '</tr></thead><tbody>';
 
-  const allRadioButtons = document.querySelectorAll('input[type="radio"]');
-  allRadioButtons.forEach(function (radio) {
-    radio.addEventListener('change', function () {
-     const radioValue = this.value;
-     const row = this.closest('tr');
-     if (radioValue!='manual'){
-             const cellToDisable = row.querySelector('#manual_input_text');;
-             cellToDisable.style.display = 'none';
-              cellToDisable.setAttribute('disabled', true); // For input elements
-            cellToDisable.style.pointerEvents = 'none'; // For non-input elements
-            cellToDisable.style.color = 'gray';
-         //   row.querySelector('input').disabled = true
-     }
-
-
-      if (!this.checked) {
-        correspondingManualInput.querySelector('input').value = '';
+    // Create table rows
+    for (var i = 0; i < data.length; i++) {
+      table += '<tr>';
+      // Add correlation index column
+      table += '<td>' + data[i]['index'] + '</td>';
+      for (var j = 0; j < data.length; j++) {
+        var value = data[i][data[j]['index']];
+        var colorClass = getColor(value);
+        table += '<td class="' + colorClass + '">' + value.toFixed(2) + '</td>';
       }
-    });
-  });
+      table += '</tr>';
+    }
 
-   function createRadio(value, name, description) {
-    const radioContainer = document.createElement('div');
-    radioContainer.className = 'option-container';
-
-    const radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.value = value;
-    radio.name = name;
-    radio.className = 'mr-2';
-
-    const radioLabel = document.createElement('label');
-    radioLabel.textContent = description;
-    radioLabel.className = 'radio-label';
-
-    radioContainer.appendChild(radio);
-    radioContainer.appendChild(radioLabel);
-
-    return radioContainer;
+    table += '</tbody></table>';
+    return table;
   }
 
-
-  function createColumnOptions(columnsData, tableBodyId, columnType) {
-    const tableBody = document.querySelector('#' + tableBodyId);
-    for (const [columnName, columnTypeData] of Object.entries(columnsData)) {
-      if (columnTypeData === columnType) {
-        const row = document.createElement('tr');
-
-        // Column name cell
-        const columnNameCell = document.createElement('td');
-        columnNameCell.textContent = columnName;
-        row.appendChild(columnNameCell);
-
-
-
-      // Radio buttons for Do Nothing, Mean, Zero
-      const doNothingRadio = document.createElement('td');
-      doNothingRadio.appendChild(createRadio('do_nothing', columnName, ''));
-      row.appendChild(doNothingRadio);
-
-      const meanRadio = columnType === 'numeric' ? document.createElement('td') : null;
-      if (meanRadio) {
-        meanRadio.appendChild(createRadio('mean', columnName, ''));
-        row.appendChild(meanRadio);
-      }
-
-      const zeroRadio = columnType === 'numeric' ? document.createElement('td') : null;
-      if (zeroRadio) {
-        zeroRadio.appendChild(createRadio('zero', columnName, ''));
-        row.appendChild(zeroRadio);
-      }
-
-      // Manual Input radio button and manual input field
-      const manualInputRadio = document.createElement('td');
-      manualInputRadio.appendChild(createRadio('manual', columnName, 'Manual Input'));
-      row.appendChild(manualInputRadio);
-
-      const manualInput = document.createElement('td');
-      manualInput.setAttribute("id", "manual_input_text");
-      manualInput.textContent = '';
-      manualInput.style.display = 'none';
-      manualInput.appendChild(document.createElement('input')); // Add input field inside the cell
-      row.appendChild(manualInput);
-
-
-
-
-
-          // Event listener to show/hide the manual input field
-   manualInputRadio.querySelector('input[type="radio"]').addEventListener('change', function () {
-  manualInput.style.display = this.checked ? 'block' : 'none';
-  if (!this.checked) {
-    manualInput.querySelector('input[type="text"]').value = ''; // Updated selector
-    manualInput.querySelector('input[type="text"]').style.display = 'none';; // Updated selector
-  }
-});
-
-        tableBody.appendChild(row);
-      }
+  function getColor(value) {
+    // You can customize this function to map values to color classes as per your requirements
+    // For simplicity, this example uses predefined classes for different ranges
+    if (value >= 0.8 ||  value <= -0.8)  {
+      return 'heatmap-cell-1';
+    } else if (value >= 0.6  ||  value <= -0.6) {
+      return 'heatmap-cell-2';
+    } else if (value >= 0.4  || value <= -0.4) {
+      return 'heatmap-cell-3';
+    } else if (value >= 0.2 || value <= -0.2) {
+      return 'heatmap-cell-4';
+    } else if (value >= -0.2) {
+      return 'heatmap-cell-5';
+    } else {
+      return 'heatmap-cell-6';
     }
   }
-});
+  // Example data
+  var correlationData = [
+    {'index': 'grade', 'grade': 1.0, 'annual_inc': 0.0054441397354406335, 'home_ownership': 0.08295875882958355, 'dti': 0.06429265569343882, 'purpose': 0.20464436290951332, 'term': 0.3537979696222608, 'revol_util': 0.16843218702728885, 'bad_loan': 0.18869429501710358},
+    {'index': 'annual_inc', 'grade': 0.0054441397354406335, 'annual_inc': 1.0, 'home_ownership': 0.19183170421873416, 'dti': 0.14105609914981013, 'purpose': 0.021732765294629756, 'term': -0.11431298629614177, 'revol_util': -0.05260793506821007, 'bad_loan': 0.12302944304095516},
+    {'index': 'home_ownership', 'grade': 0.08295875882958355, 'annual_inc': 0.19183170421873416, 'home_ownership': 1.0, 'dti': 0.013097107661500643, 'purpose': 0.04891392700096266, 'term': -0.09137978111525066, 'revol_util': 0.013428536685818582, 'bad_loan': 0.06874795954709552},
+    {'index': 'dti', 'grade': 0.06429265569343882, 'annual_inc': 0.14105609914981013, 'home_ownership': 0.013097107661500643, 'dti': 1.0, 'purpose': -0.028120642129720676, 'term': 0.04241080861993266, 'revol_util': 0.054333180518763645, 'bad_loan': 0.11843738062057005},
+    {'index': 'purpose', 'grade': 0.20464436290951332, 'annual_inc': 0.021732765294629756, 'home_ownership': 0.04891392700096266, 'dti': -0.028120642129720676, 'purpose': 1.0, 'term': -0.02241860957265085, 'revol_util': -0.017087883774760636, 'bad_loan': 0.05437150307992627},
+    {'index': 'term', 'grade': 0.3537979696222608, 'annual_inc': -0.11431298629614177, 'home_ownership': -0.09137978111525066, 'dti': 0.04241080861993266, 'purpose': -0.02241860957265085, 'term': 1.0, 'revol_util': 0.06002353279332895, 'bad_loan': 0.13112421088894832},
+    {'index': 'revol_util', 'grade': 0.16843218702728885, 'annual_inc': -0.05260793506821007, 'home_ownership': 0.013428536685818582, 'dti': 0.054333180518763645, 'purpose': -0.017087883774760636, 'term': 0.06002353279332895, 'revol_util': 1.0, 'bad_loan': 0.07283137861585783},
+    {'index': 'bad_loan', 'grade': 0.18869429501710358, 'annual_inc': 0.12302944304095516, 'home_ownership': 0.06874795954709552, 'dti': 0.11843738062057005, 'purpose': 0.05437150307992627, 'term': 0.13112421088894832, 'revol_util': 0.07283137861585783, 'bad_loan': 1.0}
+  ];
+
+  // Display table with heatmap
+  var tableHtml = generateTable(correlationData);
+  document.body.innerHTML += tableHtml;
 </script>
 
 </body>

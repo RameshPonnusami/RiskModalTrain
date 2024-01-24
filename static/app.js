@@ -1,3 +1,6 @@
+// Import the add function from utils.js
+//import { generateCorrTable } from '.correlation.js';
+
 $(document).ready(function() {
 // Variable to store the file path
 $("#myTabs").hide();
@@ -618,11 +621,13 @@ console.log('data',model_full_path);
 
 //                    appendImgWithDiv('corr-charts-container',response.corr_ip_img_path);
 
-                     appendImgWithDiv('after-corr-charts-container',response.corr_model_ip_img_path);
+//                     appendImgWithDiv('after-corr-charts-container',response.corr_model_ip_img_path);
 
+                  var corr_df_after_binhtmlTable = generateCorrTable(response.corr_df_after_bin);
+                  $('#after-corr-charts-container').html(corr_df_after_binhtmlTable);
 
-
-
+                   var corr_df_before_binhtmlTable = generateCorrTable(response.corr_df_before_bin);
+                  $('#before-corr-charts-container').html(corr_df_before_binhtmlTable);
 
                   var thresholdTable = generateDictTable(response.threshold);
 

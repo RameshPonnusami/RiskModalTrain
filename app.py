@@ -276,8 +276,8 @@ def model_train():
                            "trainDecileWithScore": performance_metrics_dict['trainDecileWithScore'].to_dict(orient='records'),
                            "trainDecileChart": performance_metrics_dict['trainDecileChart'],
                            "dsa_dict": performance_metrics_dict['dsa_dict'],
-                           "corr_model_ip_img_path": performance_metrics_dict['corr_model_ip_img_path'],
-                           "corr_ip_img_path": performance_metrics_dict['corr_ip_img_path'],
+                           "corr_df_after_bin": performance_metrics_dict['corr_df_after_bin'].to_dict(orient='records'),
+                           "corr_df_before_bin": performance_metrics_dict['corr_df_before_bin'].to_dict(orient='records'),
                            },default=custom_encoder)
 
     else:

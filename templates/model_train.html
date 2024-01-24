@@ -4,6 +4,7 @@
 
 {% block content %}
      <script src="{{ url_for('static', filename='app.js') }}"></script>
+     <script src="{{ url_for('static', filename='correlation.js') }}"></script>
 <!--     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>-->
 
     <style>
@@ -133,7 +134,7 @@
         <button type="button" id="uploadButton">Upload CSV</button>
     </form>
     <br>
-    <div id="first10Records" class="container-fluid" ></div>
+    <div id="first10Records" class="container-fluid  table-responsive" ></div>
 
     <button id="togglebutton" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nanFillContainer" aria-expanded="false" aria-controls="nanFillContainer" style="display: none;">
     Missing Data Handling
@@ -291,9 +292,18 @@
     </div>
     <div class="tab-pane fade" id="corr-container-tab">
 
+
         <h2>After Binning</h2>
-         <div id="after-corr-charts-container">
+         <div id="after-corr-charts-container" class="table-responsive">
         </div>
+        <br>
+         <h2>Before Binning</h2>
+
+         <div id="before-corr-charts-container" class="table-responsive">
+        </div>
+
+        <br>
+        <br>
 
     </div>
 
