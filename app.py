@@ -128,7 +128,7 @@ def upload_file():
         return {'error': 'No selected file'}, 400
 
     try:
-
+        print('file getting....')
         file_full_path = os.path.join(app.root_path, 'static', 'train_data', file.filename)
         file.save(file_full_path)
         # file.close()
