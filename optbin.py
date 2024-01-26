@@ -1,18 +1,14 @@
-from optbinning import BinningProcess
-from sklearn.linear_model import LogisticRegression
-from optbinning import Scorecard
+
 from sklearn.model_selection import train_test_split
 import statsmodels.formula.api as smf
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
-import matplotlib.pyplot as plt
-import seaborn as sns
 from datetime import datetime
 import joblib
 import os, json
 from generate_chart import plot_regression_decile, plot_test_decile, plot_heat_map, get_corr
-
+from handlebins import process_opt_bin
 
 def parse_interval(interval_str):
     interval_str = interval_str.replace('(', '').replace(')', '').replace('[', '').replace(']', '')
@@ -36,6 +32,7 @@ def generate_selected_features(selected_features, selected_features_bin):
             temp_df['Bin_list'] = temp_df['Bin'].apply(parse_interval)
             # Convert the 'interval_list' column into a single flat list
             flat_list = [item for sublist in temp_df['Bin_list'] for item in sublist]
+            print('column_name',column_name,'----',flat_list)
             data_range = [min(flat_list), max(flat_list)]
             selected_features_and_bin_data['criteria'] = data_range
 
@@ -143,45 +140,6 @@ def performance_metrics(log_reg, test_df, target_column):
     return performance_metrics_dict
 
 
-def process_opt_bin(variable_names, traindf, threshold, target):
-    X = traindf[variable_names]
-
-    y = traindf[target].values
-
-    selection_criteria = {
-        "iv": {"min": 0.01, "max": 1},
-        "quality_score": {"min": 0.01},
-        #     'Event rate':{"min":0.20}
-    }
-    binning_process = BinningProcess(variable_names,
-                                     selection_criteria=selection_criteria)
-
-    estimator = LogisticRegression(solver="lbfgs")
-
-    scorecard = Scorecard(binning_process=binning_process,
-                          estimator=estimator, scaling_method="min_max",
-                          scaling_method_params={"min": 300, "max": 850})
-
-    # fit
-    binning_process.fit(traindf[variable_names], y)
-
-    # feature details
-    feature_details = binning_process.summary()
-    # print(feature_details)
-    # scorecard fit
-    scorecard.fit(X, y, show_digits=4)
-
-    # scorecard df
-    scoredf = scorecard.table(style="detailed")
-    # print(scoredf)
-    # selected_features_bin = scoredf[(scoredf['Event rate']>=0.20) & (scoredf['IV']>0.01)]
-    selected_features_bin = scoredf[(scoredf['Event rate'] >= threshold['Risk Average']) & (scoredf['WoE'] <= -0.20)]
-    # print(selected_features_bin)
-
-    selected_features = feature_details[feature_details['selected'] == True]
-    # print(selected_features)
-
-    return selected_features, selected_features_bin
 
 
 def split_train_test_dataset(traindf, target_column, test_size=0.2):

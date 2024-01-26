@@ -281,7 +281,9 @@ var ImgHtmlString = '';
 function generate_user_input_form(data,object_unique_data,SelectedfeaturesDetails,model_full_path,std_dev,low_risk_threshold,high_risk_threshold){
 console.log('data',model_full_path);
 // Create a form dynamically based on column info
+document.getElementById('dynamicFormContainer').innerHTML = '';
                 const dynamicFormContainer = document.getElementById('dynamicFormContainer');
+
                 const form = document.createElement('form');
                 form.id = 'dynamicForm';
                 form.method = 'POST';
@@ -603,6 +605,11 @@ console.log('data',model_full_path);
 
                   var pvhtmlTable = generateTable(pvalue);
                   $('#pvalue').html(pvhtmlTable);
+                  document.getElementById('testdata-container').innerHTML = '';
+                  document.getElementById('traindata-container').innerHTML = '';
+                  document.getElementById('testdata-charts-container').innerHTML = '';
+                  document.getElementById('traindata-charts-container').innerHTML = '';
+                  document.getElementById('charts-container').innerHTML = '';
                   var testdecilehtmlTable = generateTable(testdecile);
                   $('#testdata-container').html(testdecilehtmlTable);
                   var traindecilehtmlTable = generateTable(response.trainDecileWithScore);
