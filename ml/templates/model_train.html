@@ -1,0 +1,238 @@
+
+{% extends 'header.html' %}
+
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/correlation.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/genericMethods.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/handleMissingData.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/loadModalTrainData.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/modalUserInputForm.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/eventHandlerTasks.js') }}"></script>
+    <link href="{{ url_for('static',filename='styles/modalTrainStyles.css') }}" rel="stylesheet">
+
+    <style>
+    </style>js
+
+    <h1>Risk Score Prediction</h1>
+<!--<button onclick="exportToPDF()">Export to PDF</button>-->
+
+    <form id="uploadForm">
+        <input type="file" id="fileInput" name="file" accept=".csv">
+        <button type="button" id="uploadButton">Upload CSV</button>
+    </form>
+    <br>
+    <div id="first10Records" class="container-fluid  table-responsive" ></div>
+
+    <button id="togglebutton" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nanFillContainer" aria-expanded="false" aria-controls="nanFillContainer" style="display: none;">
+    Missing Data Handling
+</button>
+
+<div id="nanFillContainer" class="tables-container  collapse ml-0">
+  <div class="numeric-table-container">
+        <h2> Numeric Fields</h2>
+    <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Column Name</th>
+        <th>Do Nothing</th>
+        <th>Mean</th>
+        <th>Zero</th>
+        <th>Manual Input</th>
+        <th>Manual Value</th>
+      </tr>
+    </thead>
+    <tbody id="numeric-table-body">
+    </tbody>
+  </table>
+</div>
+
+<div class="categorical-table-container">
+    <h2> Categorical Fields</h2>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Column Name</th>
+        <th>Do Nothing</th>
+        <th>Manual Input</th>
+        <th>Manual Value</th>
+      </tr>
+    </thead>
+    <tbody id="categorical-table-body">
+    </tbody>
+  </table>
+
+</div>
+</div>
+
+
+
+
+    <!-- Form to select the target column -->
+    <div id="targetColumnForm">
+        <label for="targetColumnSelect">Select Target Column:</label>
+        <select id="targetColumnSelect"></select>
+        <button type="button" id="selectTargetColumnButton">Train Model</button>
+    </div>
+
+
+
+
+<div id="loader" style="display: none; text-align: center;">
+  <img src="static/gifs/Blinkingsquares.gif" alt="Loading...">
+</div>
+     <!-- Progress bar -->
+    <div id="progress-bar">
+        <div id="step1" style="background-color:#4CAF50;"></div>
+        <div id="step2" style="background-color:#4CAF50;"></div>
+        <div id="step3" style="background-color:#4CAF50;"></div>
+    </div>
+
+<ul class="nav nav-tabs sticky-top" id="myTabs">
+
+    <li class="nav-item">
+        <a class="nav-link" name="threshold-container-tab" data-toggle="tab">Threshold</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="selected-features-details-container-tab" data-toggle="tab" >Selected Features Details </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="charts-container-tab" data-toggle="tab"  >EDA  </a>
+    </li>
+       <li class="nav-item">
+        <a class="nav-link active" name="coef-tab" data-toggle="tab" >Modal Details </a>
+    </li>
+<!--    <li class="nav-item">-->
+<!--        <a class="nav-link" name="pvalue-tab" data-toggle="tab" >P-Value </a>-->
+<!--    </li>-->
+    <li class="nav-item">
+        <a class="nav-link" name="dynamicFormContainer-tab" data-toggle="tab"  >Get Score </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" name="testdata-container-tab" data-toggle="tab"  >Test-Data </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" name="traindata-container-tab" data-toggle="tab"  >Train-Data </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="dsa-container-tab" data-toggle="tab"  >Descriptive statistics</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="corr-container-tab" data-toggle="tab"  >Correlation</a>
+    </li>
+
+
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="coef-tab">
+        <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+            <div class="col-md-8 mx-auto bg-white">
+
+                 <div id="pvalue"></div>
+                 <div id="coef"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="threshold-container-tab">
+        <div id="threshold-container"></div>
+    </div>
+    <div class="tab-pane fade" id="selected-features-details-container-tab">
+        <div id="selected-features-details-container"></div>
+    </div>
+    <div class="tab-pane fade" id="charts-container-tab">
+        <div id="charts-container">
+        </div>
+    </div>
+
+
+    <div class="container mt-4 tab-pane fade"  id="dynamicFormContainer-tab">
+        <div class="row">
+            <!-- Form Container -->
+            <div class="col-md-6">
+                <div class=" w-50 mx-auto" >
+                     <div id="dynamicFormContainer"></div>
+                </div>
+            </div>
+            <div id="predictedResult" class="col-md-6 bg-light"></div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="testdata-container-tab">
+        <div id="testdata-container">
+        </div>
+         <div id="testdata-charts-container">
+        </div>
+    </div>
+    <div class="tab-pane fade" id="traindata-container-tab">
+        <div id="traindata-container">
+        </div>
+         <div id="traindata-charts-container">
+        </div>
+    </div>
+    <div class="tab-pane fade" id="dsa-container-tab">
+        <div id="dsa-container">
+        </div>
+
+    </div>
+    <div class="tab-pane fade" id="corr-container-tab">
+
+
+        <h2>After Binning</h2>
+         <div id="after-corr-charts-container" class="table-responsive">
+        </div>
+        <br>
+         <h2>Before Binning</h2>
+
+         <div id="before-corr-charts-container" class="table-responsive">
+        </div>
+
+        <br>
+        <br>
+
+    </div>
+
+
+
+</div>
+
+
+    <div id="image-viewer">
+<span class="close">&times;</span>
+<img class="modal-content" id="full-image">
+</div>
+
+
+
+
+<script>
+    // Initial loading for the active tab
+
+    function exportToPDF() {
+  const doc = new jsPDF();
+
+  // Iterate through each visible tab and its content:
+  $('.tab-content .tab-pane.show').each(function() {
+    const tabContent = $(this).html();
+    doc.html(tabContent, {
+      callback: function(doc) {
+        // Add a new page for each tab (optional):
+        doc.addPage();
+      }
+    });
+  });
+
+  // Save the PDF:
+  doc.save('risk-score-report.pdf');
+}
+
+
+</script>
+
+
+{% endblock %}

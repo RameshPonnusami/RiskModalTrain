@@ -1,34 +1,13 @@
-2023-12-20 13:22:10,106 - DEBUG - This is a debug message from the route
-2023-12-20 13:23:00,659 - DEBUG - This is a debug message from the route
-2023-12-20 13:23:00,659 - INFO - This is an info message
-2023-12-20 13:23:00,660 - WARNING - This is a warning message
-2023-12-20 13:23:00,660 - ERROR - This is an error message
-2023-12-20 13:23:00,660 - CRITICAL - This is a critical message
-2023-12-20 15:00:57,388 - INFO - This is an info message
-2023-12-20 15:00:57,388 - WARNING - This is a warning message
-2023-12-20 15:00:57,389 - ERROR - This is an error message
-2023-12-20 15:00:57,389 - CRITICAL - This is a critical message
-2023-12-20 15:04:36,555 - ERROR - This is an error message
-2023-12-20 15:04:36,556 - CRITICAL - This is a critical message
-2023-12-20 15:09:46,538 - DEBUG - This is a debug message from the route
-2023-12-20 15:09:46,538 - INFO - This is an info message
-2023-12-20 15:09:46,538 - WARNING - This is a warning message
-2023-12-20 15:09:46,538 - ERROR - This is an error message
-2023-12-20 15:09:46,538 - CRITICAL - This is a critical message
-2023-12-20 15:10:12,060 - ERROR - This is an error message
-2023-12-20 15:10:12,061 - CRITICAL - This is a critical message
-2023-12-25 23:15:39,351 - DEBUG - This is a debug message from the route
-2023-12-25 23:15:39,352 - INFO - This is an info message
-2023-12-25 23:15:39,353 - WARNING - This is a warning message
-2023-12-25 23:15:39,354 - ERROR - This is an error message
-2023-12-25 23:15:39,354 - CRITICAL - This is a critical message
-2023-12-25 23:15:45,665 - DEBUG - This is a debug message from the route
-2023-12-25 23:15:45,666 - INFO - This is an info message
-2023-12-25 23:15:45,666 - WARNING - This is a warning message
-2023-12-25 23:15:45,667 - ERROR - This is an error message
-2023-12-25 23:15:45,667 - CRITICAL - This is a critical message
-2023-12-25 23:16:30,745 - DEBUG - This is a debug message from the route
-2023-12-25 23:16:30,745 - INFO - This is an info message
-2023-12-25 23:16:30,746 - WARNING - This is a warning message
-2023-12-25 23:16:30,746 - ERROR - This is an error message
-2023-12-25 23:16:30,747 - CRITICAL - This is a critical message
+2024-01-28 22:21:47,412 - ml - WARNING - This is a warning message
+2024-01-28 22:21:47,412 - ml - ERROR - This is an error message
+2024-01-28 22:21:47,413 - ml - CRITICAL - This is a critical message
+2024-01-28 22:22:37,020 - ml - WARNING - This is a warning message
+2024-01-28 22:22:37,020 - ml - ERROR - This is an error message
+2024-01-28 22:22:37,020 - ml - CRITICAL - This is a critical message
+2024-01-29 07:10:21,300 - ml - WARNING - This is a warning message
+2024-01-29 07:10:21,301 - ml - ERROR - This is an error message
+2024-01-29 07:10:21,301 - ml - CRITICAL - This is a critical message
+2024-01-29 07:11:57,523 - ml - WARNING - This is a warning message
+2024-01-29 07:11:57,523 - ml - ERROR - This is an error message
+2024-01-29 07:11:57,523 - ml - CRITICAL - This is a critical message
+2024-01-29 07:49:20,201 - ml - DEBUG - [{'columnName': 'Age', 'selectedOption': 'manual', 'textInput': '890', 'columnType': 'numeric'}, {'columnName': 'Amount', 'selectedOption': '', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Cred_length', 'selectedOption': '', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Default', 'selectedOption': '', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Emp_length', 'selectedOption': '', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Id', 'selectedOption': '', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Income', 'selectedOption': 'manual', 'textInput': '3000', 'columnType': 'numeric'}, {'columnName': 'Percent_income', 'selectedOption': 'zero', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Rate', 'selectedOption': 'mean', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Status', 'selectedOption': 'zero', 'textInput': '', 'columnType': 'numeric'}, {'columnName': 'Home', 'selectedOption': 'manual', 'textInput': 'RENT', 'columnType': 'categorical'}, {'columnName': 'Intent', 'selectedOption': 'manual', 'textInput': 'PERSONAL', 'columnType': 'categorical'}]

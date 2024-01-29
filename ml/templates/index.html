@@ -1,0 +1,80 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPA Predictor: Uncover Financial Insights</title>
+    <!-- Link to Bootstrap CSS -->
+    <link href="{{ url_for('static',filename='styles/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='styles/style.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static',filename='styles/bootstrap.bundle.min.js') }}"></script>
+    <link href="{{ url_for('static',filename='styles/fontawesome/css/all.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!--
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Home</a>
+        <a class="navbar-brand" href="/model_details">Model Details</a>
+        <a class="navbar-brand" href="/predict">Predict</a>
+
+    </nav>
+    -->
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <h2 class="text-warning">
+                        <img src="{{ url_for('static',filename='styles/zuci-system.png') }}">
+                    </h2>
+                </a>
+              <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mob-navbar" aria-label="Toggle">
+                <span class="navbar-toggler-icon"></span>
+                </button>-->
+                <div class="w-100 h4 text-gold justify-content-center align-items-center text-center" id="">
+                   NPA Predictions
+                </div>
+
+            </div>
+         {% if 'username' in session %}
+            <p style="color: #a7b9d3;width:100px;margin-top:18px;">Hi, {{ session['username'] }}!</p>
+
+                <ul class="navbar-nav ml-auto mb-2 mb-lg-0"  style="width:75px;">
+    <li class="nav-item">
+        <a class="nav-link" href="logout">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </li>
+</ul>
+                {% else %}
+                  <li class="nav-item">
+                    <p>Please <a href="{{ url_for('login') }}">login</a></p> </li>
+                {% endif %}
+        </nav>
+        <div class="row mt-5">
+            <div class="col-md-6 mx-auto">
+                <div class="center mt-5">
+                
+                    <button class="btn-square btn-orange" onclick="location.href='model_details';" >
+                        <span class="fontawesome-camera-retro"></span>Model Details
+                    </button>
+                    
+                    <button class="btn-square btn-blue" onclick="location.href='predict';" >
+                        Predict
+                    </button>
+
+
+                    <button class="btn-square btn-blue" onclick="location.href='model_train';" >
+                        Model Train
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container m-4">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

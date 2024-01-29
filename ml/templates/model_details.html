@@ -1,0 +1,91 @@
+<!-- model_details.html -->
+{% extends 'header.html' %}
+
+{% block content %}
+<!--
+<div class="row">
+    <div class="col-md-12 bg-white">
+        <h2 class="text-left p-2 mt-1 text-white bg-success"><i class="fa fa-chart-bar"></i> Model Details</h2>
+    </div> 
+</div> -->
+<div class="row">
+    <div class="col-md-12 bg-white">
+        <p>{{ model_info }}</p>
+        <h3 class="bg-primary text-center text-white p-2">Logistic Regression Model Summary</h2>
+    </div> 
+</div> 
+<div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+    <div class="col-md-8 mx-auto bg-white">
+        {% if pvalues_table_html is defined %}
+        <h3 class="bg-primary text-center text-white rounded">P-values Table</h3>
+        {{ pvalues_table_html|safe }}
+        {% else %}
+            <p>No p-values table available.</p>
+        {% endif %}   
+    </div> 
+    <div class="col-md-8 mx-auto bg-white">
+        {% if coef_table_html is defined %}
+        <h3 class="bg-primary text-center text-white rounded">Coefficient Table</h3>
+        {{ coef_table_html|safe }}
+        {% else %}
+            <p>No coefficient table available.</p>
+        {% endif %}
+    </div> 
+</div> 
+<div>
+<div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+    <h3 class="bg-primary text-center text-white"> Performance Metrics</h3>
+    <div class="col-md-8 mx-auto bg-white">   
+
+        <table class="table table-bordered table-striped w-75 mx-auto">
+        {% for key, value in model_result.items() %}
+        <tr>
+            <td class="fw-bold">{{ key }}:</td>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+    </div>
+    <div class="col-md-4 mx-auto bg-white">  
+        <h3 class="bg-primary text-center text-white"> ROC-AUC  Curve</h3>
+        <div class="row">
+            {% for ch in performance_charts %}
+                <div class="col-md-12 mx-auto">
+                    <img src="{{ url_for('static', filename='charts/' + ch) }}" alt="Bivariate Chart" class="img-fluid mb-3">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+        
+<div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+     <h3 class="bg-primary text-center text-white"> Bivariate Analysis</h3>
+    <div class="col-md-12 mx-auto bg-white">       
+        <h4 class="bg-primary text-center text-white"> Categorical Variables</h4>
+        <div class="row">
+            {% for chart in categorical_charts %}
+                <div class="col-md-4 images mx-auto">
+                    <img src="{{ url_for('static', filename='charts/' + chart) }}" alt="Bivariate Chart" class="img-fluid mb-3">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+    <div class="col-md-12 mx-auto bg-white">
+        <h4 class="bg-primary text-center text-white"> Continuous Variables</h4>
+        <div class="row">
+            {% for chart in continous_charts %}
+                <div class="col-md-4 images mx-auto">
+                    <img src="{{ url_for('static', filename='charts/' + chart) }}" alt="Bivariate Chart" class="img-fluid mb-3">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div id="image-viewer">
+<span class="close">&times;</span>
+<img class="modal-content" id="full-image">
+</div>
+    </div>
+{% endblock %}
