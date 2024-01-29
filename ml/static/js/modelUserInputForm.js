@@ -191,7 +191,7 @@ function showPredictedScore(Score,Color){
     cardString += '<div class="custom-modal '+csscolorClass+'">,'+
                     cssWarningClass+
                     '<div class="content">,'+
-                    '<p class="type">Score:'+Score +'</p>,'+
+                    '<p class="type">Score:'+Score +'</p>'+
                     cssMsg+
                     '</div>,'+
                     '</div>,'

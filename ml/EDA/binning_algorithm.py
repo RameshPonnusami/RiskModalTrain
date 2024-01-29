@@ -1,3 +1,4 @@
+from typing import List, Dict, Any, Tuple
 
 from sklearn.model_selection import train_test_split
 import statsmodels.formula.api as smf
@@ -10,13 +11,15 @@ import os, json
 from .generate_chart import plot_regression_decile, plot_test_decile, plot_heat_map, get_corr
 from .handlebins import process_opt_bin
 from ml import app
-def parse_interval(interval_str):
+
+
+def parse_interval(interval_str: str) -> list:
     interval_str = interval_str.replace('(', '').replace(')', '').replace('[', '').replace(']', '')
     start, end = map(float, interval_str.split(','))
     return [start, end]
 
 
-def generate_selected_features(selected_features, selected_features_bin):
+def generate_selected_features(selected_features: pd.DataFrame, selected_features_bin: pd.DataFrame) -> list:
     selected_features_and_bin_data_list = []
     for i, data in selected_features.iterrows():
         selected_features_and_bin_data = {}
@@ -32,7 +35,6 @@ def generate_selected_features(selected_features, selected_features_bin):
             temp_df['Bin_list'] = temp_df['Bin'].apply(parse_interval)
             # Convert the 'interval_list' column into a single flat list
             flat_list = [item for sublist in temp_df['Bin_list'] for item in sublist]
-            print('column_name',column_name,'----',flat_list)
             data_range = [min(flat_list), max(flat_list)]
             selected_features_and_bin_data['criteria'] = data_range
 
@@ -40,12 +42,13 @@ def generate_selected_features(selected_features, selected_features_bin):
     return selected_features_and_bin_data_list
 
 
-def format_criteria_for_ui(selected_features_details_list):
+def format_criteria_for_ui(selected_features_details_list: list) -> list:
     for lv in selected_features_details_list:
         column_type = lv['type']
         criteria = lv['criteria']
         if column_type == 'categorical':
-            lv['Impact Criteria'] = ','.join(criteria)
+            criteria_as_strings = [str(item) for item in criteria]
+            lv['Impact Criteria'] = ','.join(criteria_as_strings)
             format_list = criteria
         if column_type == 'numerical':
             if np.inf in criteria:
@@ -61,7 +64,8 @@ def format_criteria_for_ui(selected_features_details_list):
     return selected_features_details_list
 
 
-def do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_data):
+def do_manual_optimal_binning(selected_features_and_bin_data_list: list,
+                              model_input_data: pd.DataFrame) -> pd.DataFrame:
     for lv in selected_features_and_bin_data_list:
         column_name = lv['name']
         column_type = lv['type']
@@ -81,7 +85,7 @@ def do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_d
     return model_input_data
 
 
-def predict_bulk_df(test_df, target_column, log_reg):
+def predict_bulk_df(test_df: pd.DataFrame, target_column: str, log_reg: smf.logit) -> tuple:
     X_test = test_df.drop(target_column, axis=1)  # Adjust the column name accordingly
     sc = X_test.columns
     y_test = test_df[target_column]
@@ -89,12 +93,11 @@ def predict_bulk_df(test_df, target_column, log_reg):
     y_pred_binary = (y_pred >= 0.5).astype(int)
     op_cl = 'PredictionProbability'
     test_df[op_cl] = y_pred
-    print(len(y_pred))
     return test_df, y_test, y_pred_binary, sc, y_pred
 
 
-def performance_metrics(log_reg, test_df, target_column):
-    test_df, y_test, y_pred_binary, sc,y_pred = predict_bulk_df(test_df, target_column, log_reg)
+def performance_metrics(log_reg: smf.logit, test_df: pd.DataFrame, target_column: str) -> dict:
+    test_df, y_test, y_pred_binary, sc, y_pred = predict_bulk_df(test_df, target_column, log_reg)
     save_path, FinResultDf = plot_test_decile(test_df, sc, target_column)
     # Compute confusion matrix
     cm = confusion_matrix(y_test, y_pred_binary)
@@ -140,9 +143,7 @@ def performance_metrics(log_reg, test_df, target_column):
     return performance_metrics_dict
 
 
-
-
-def split_train_test_dataset(traindf, target_column, test_size=0.2):
+def split_train_test_dataset(traindf: pd.DataFrame, target_column: str, test_size: float = 0.2) -> Tuple[pd.DataFrame, pd.DataFrame]:
     # Specify your features (X) and target variable (y)
     X = traindf.drop(target_column, axis=1)  # Adjust the column name accordingly
     y = traindf[target_column]
@@ -157,12 +158,14 @@ def split_train_test_dataset(traindf, target_column, test_size=0.2):
 
     return ipdata, ip_test_data
 
-def get_dsa(ipdf):
+
+def get_dsa(ipdf: pd.DataFrame) -> List[Dict]:
     de = ipdf.describe().T.reset_index()
-    de.rename(columns={"index":"FieldName"},inplace=True)
+    de.rename(columns={"index": "FieldName"}, inplace=True)
     return de.to_dict('records')
 
-def process_train_data(traindf, target_column):
+
+def process_train_data(traindf: pd.DataFrame, target_column: str) -> Tuple[str, smf.logit, Dict, np.ndarray, List[Dict], Dict, str]:
     # target_column = 'bad_loan'
 
     ipdata, ip_test_data = split_train_test_dataset(traindf, target_column, test_size=0.2)
@@ -185,10 +188,8 @@ def process_train_data(traindf, target_column):
 
     dsa_dict = get_dsa(ipdata)
     corr_df = get_corr(ipdata)
-    corr_df.fillna(0,inplace=True)
-    corr_ip_df= corr_df.reset_index()
-
-
+    corr_df.fillna(0, inplace=True)
+    corr_ip_df = corr_df.reset_index()
 
     model_input_data = ipdata[selected_features_names_with_target].copy()
 
@@ -196,9 +197,8 @@ def process_train_data(traindf, target_column):
 
     # corr_model_ip_img_path = plot_heat_map(model_input_data.corr())
     corr_df = model_input_data.corr()
-    corr_df.fillna(0,inplace=True)
+    corr_df.fillna(0, inplace=True)
     corr_df_ = corr_df.reset_index()
-
 
     features_string = '+'.join(selected_features_names)
 
@@ -225,26 +225,27 @@ def process_train_data(traindf, target_column):
 
     performance_metrics_dict = performance_metrics(log_reg, model_ip_test_data[selected_features_names_with_target],
                                                    target_column)
-    performance_metrics_dict['trainDecileWithScore']=DecileScoreDf
-    performance_metrics_dict['trainDecileChart']=save_path
-    performance_metrics_dict['dsa_dict']=dsa_dict
-    performance_metrics_dict['corr_df_after_bin']=corr_df_
-    performance_metrics_dict['corr_df_before_bin']=corr_ip_df
+    performance_metrics_dict['trainDecileWithScore'] = DecileScoreDf
+    performance_metrics_dict['trainDecileChart'] = save_path
+    performance_metrics_dict['dsa_dict'] = dsa_dict
+    performance_metrics_dict['corr_df_after_bin'] = corr_df_
+    performance_metrics_dict['corr_df_before_bin'] = corr_ip_df
     # performance_metrics_dict = performance_metrics(log_reg, X_test, y_test)
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     model_filename = f'model_{timestamp}.joblib'
     model_full_path = os.path.join(app.static_folder, 'trained_model', model_filename)
 
     joblib.dump(log_reg, model_full_path)
+
     return (logit_str, log_reg, threshold, selected_features_names_with_target, selected_features_and_bin_data_list,
             performance_metrics_dict, model_full_path)
 
 
-def get_model_file(model_path):
+def get_model_file(model_path: str) -> Any:
     return joblib.load(model_path)
 
 
-def predict_score(json_data, selectedcriteria, model_full_path):
+def predict_score(json_data: Dict, selectedcriteria: List[Dict], model_full_path: str) -> Tuple[float, str]:
     input_dict = {}
     for rj in selectedcriteria:
         cname = rj['name']

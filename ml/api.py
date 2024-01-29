@@ -8,7 +8,7 @@ import pandas as pd
 import json
 
 @app.route('/upload', methods=['POST'])
-def upload_file():
+def upload_file() -> dict:
     if 'file' not in request.files:
         return {'error': 'No file part'}, 400
 
@@ -18,7 +18,6 @@ def upload_file():
         return {'error': 'No selected file'}, 400
 
     try:
-        print('file getting....')
         file_full_path = os.path.join(app.static_folder, 'train_data', file.filename)
         file.save(file_full_path)
         # file.close()
@@ -45,14 +44,13 @@ def upload_file():
                          "column_types":column_types
                          }
                    }
-        # print(response)
         return response
 
     except Exception as e:
         return {'error': str(e)}, 500
 
 @app.route('/model_test_with_user_input', methods=['POST'])
-def model_test_with_user_input():
+def model_test_with_user_input() -> str:
     if request.method == 'POST':
         request_json = request.json
         model_full_path = request_json['model_full_path']

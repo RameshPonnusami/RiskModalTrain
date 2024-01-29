@@ -4,9 +4,10 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 import seaborn as sns
 from ml.utils.common_ops import get_save_path, get_relative_path
+from typing import Tuple, List, Dict, Any
 
 
-def identify_data_types(df):
+def identify_data_types(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
     # Selecting categorical columns
     categorical_columns = df.select_dtypes(include='object').columns.tolist()
 
@@ -16,9 +17,8 @@ def identify_data_types(df):
     return categorical_columns, numeric_columns
 
 
-
-
-def plot_bar_chart(findf, bin_column_name, target_percentage, target_label, save_path):
+def plot_bar_chart(findf: pd.DataFrame, bin_column_name: str, target_percentage: str, target_label: str,
+                   save_path: str) -> None:
     #     print('findf',findf)
     unique_values_count = len(findf[bin_column_name].unique())
     unique_values_count += 10
@@ -42,7 +42,7 @@ def plot_bar_chart(findf, bin_column_name, target_percentage, target_label, save
     plt.close()
 
 
-def plot_diagram(column_name, npa_df, target, fig_size=None):
+def plot_diagram(column_name: str, npa_df: pd.DataFrame, target: str, fig_size: Any = None) -> Tuple[str, pd.DataFrame]:
     mean_column_name = column_name + 'mean'
 
     # print(column_name)
@@ -75,8 +75,8 @@ def plot_diagram(column_name, npa_df, target, fig_size=None):
     return save_path, FinalDataFrame
 
 
-
-def plot_regression_decile(column, final_df, target, additional_columns=[]):
+def plot_regression_decile(column: str, final_df: pd.DataFrame, target: str, additional_columns: List[str] = []) -> \
+Tuple[str, pd.DataFrame]:
     tar_percentage = "Percentage_" + target
     label_plot = 'Percentage_of_' + target
     target_mean = target + 'mean'
@@ -148,7 +148,7 @@ def plot_regression_decile(column, final_df, target, additional_columns=[]):
     return save_path, FinalDataFrame
 
 
-def process_charts(df, target_column):
+def process_charts(df: pd.DataFrame, target_column: str) -> Dict[str, List[Dict[str, Any]]]:
     categorical_columns, numeric_columns = identify_data_types(df)
 
     bar_chart_details_list = []
@@ -192,7 +192,7 @@ def process_charts(df, target_column):
     return all_chart_details
 
 
-def change_type_to_int(base_df):
+def change_type_to_int(base_df: pd.DataFrame) -> pd.DataFrame:
     cls = ['balance probability min',
            'balance probability max',
            'balance probability mean',
@@ -203,18 +203,21 @@ def change_type_to_int(base_df):
         base_df[cl] = base_df[cl].astype(int)
     return base_df
 
-def format_the_column(ip_df):
+
+def format_the_column(ip_df: pd.DataFrame) -> pd.DataFrame:
     f_columns = []
     for ip in ip_df.columns:
-        v = ip.replace('-','').replace(' ','').replace('(','').replace (')','').replace('/','_').replace('%',
-                                                                               ')'
-                                                                               ).replace('_ ','').replace('.','_')
-        v=v.replace('min', ' min').replace('max', ' max').replace('mean',' mean').replace('PredictionProbability',
-                                                                                         'Prediction Probability')
+        v = ip.replace('-', '').replace(' ', '').replace('(', '').replace(')', '').replace('/', '_').replace('%',
+                                                                                                             ')'
+                                                                                                             ).replace(
+            '_ ', '').replace('.', '_')
+        v = v.replace('min', ' min').replace('max', ' max').replace('mean', ' mean').replace('PredictionProbability',
+                                                                                             'Prediction Probability')
         f_columns.append(v)
     return ip_df.rename(columns={ip: v for ip, v in zip(ip_df.columns, f_columns)})
 
-def round_df_value(FinalDataFrame):
+
+def round_df_value(FinalDataFrame: pd.DataFrame) -> pd.DataFrame:
     for cl in list(FinalDataFrame.columns):
         try:
             if FinalDataFrame[cl].dtype == 'float64':
@@ -223,23 +226,24 @@ def round_df_value(FinalDataFrame):
             pass
     return FinalDataFrame
 
-def plot_test_decile(rawdata,selected_columns,target_column, orderby_feild = 'PredictionProbability'):
-    orderby_feild_mean = orderby_feild+ 'mean'
+
+def plot_test_decile(rawdata: pd.DataFrame, selected_columns: List[str], target_column: str, orderby_field: str = 'PredictionProbability') -> Tuple[str, pd.DataFrame]:
+    orderby_feild_mean = orderby_field + 'mean'
     target_cl = target_column
-    target_mean = target_cl+ 'mean'
+    target_mean = target_cl + 'mean'
     condition_dict = {target_cl: ['sum', 'count', 'mean'], 'PredictionProbability': ['min', 'max', 'mean']
                       }
     for sc in selected_columns:
         if sc not in [target_cl]:
-            condition_dict[sc]=['mean']
-    GrandTotal=rawdata.sort_values (by=[orderby_feild], ascending=False)
-    GrandTotal['Decile_rank'] = pd.qcut (GrandTotal[orderby_feild].rank (method='first'), 10, labels = False)
-    FinalDataFrame=GrandTotal.groupby("Decile_rank").agg (condition_dict)
-    FinalDataFrame.columns=["".join(j) for j in list (FinalDataFrame.columns)]
-    FinalDataFrame.reset_index (inplace=True)
-    #print (FinalDataFrame.columns)
+            condition_dict[sc] = ['mean']
+    GrandTotal = rawdata.sort_values(by=[orderby_field], ascending=False)
+    GrandTotal['Decile_rank'] = pd.qcut(GrandTotal[orderby_field].rank(method='first'), 10, labels=False)
+    FinalDataFrame = GrandTotal.groupby("Decile_rank").agg(condition_dict)
+    FinalDataFrame.columns = ["".join(j) for j in list(FinalDataFrame.columns)]
+    FinalDataFrame.reset_index(inplace=True)
+    # print (FinalDataFrame.columns)
     # FinalDataFrame["Percentage"]=FinalDataFrame["StarLabelsum"]/FinalDataFrame["StarLabelcount"]*100
-    FinalDataFrame [target_mean] =FinalDataFrame [target_mean] *100
+    FinalDataFrame[target_mean] = FinalDataFrame[target_mean] * 100
     FinalDataFrame.sort_values(by=[orderby_feild_mean], ascending=False, inplace=True)
 
     reg = LinearRegression()
@@ -250,34 +254,36 @@ def plot_test_decile(rawdata,selected_columns,target_column, orderby_feild = 'Pr
     plt.ylabel(target_mean)
 
     plt.scatter(FinalDataFrame[["PredictionProbabilitymean"]], FinalDataFrame[target_mean], color="red", marker="+")
-    plt.plot(FinalDataFrame[["PredictionProbabilitymean"]], reg.predict(FinalDataFrame[["PredictionProbabilitymean"]]), color='blue')
+    plt.plot(FinalDataFrame[["PredictionProbabilitymean"]], reg.predict(FinalDataFrame[["PredictionProbabilitymean"]]),
+             color='blue')
     save_path = get_save_path(str(target_mean) + '.png')
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0.1)
-    #FinalDataFrame.columns=total_mean_list
+    # FinalDataFrame.columns=total_mean_list
     FinalDataFrame_ = format_the_column(FinalDataFrame.copy())
     # FinalDataFrame = change_type_to_int (FinalDataFrame_)
     plt.close()
     FinalDataFrame_ = round_df_value(FinalDataFrame_)
     save_path = get_relative_path(save_path)
-    return save_path ,FinalDataFrame_
+    return save_path, FinalDataFrame_
 
-def get_corr(df):
+
+def get_corr(df: pd.DataFrame) -> pd.DataFrame:
     numeric_columns = df.select_dtypes(include='number').columns
     categorical_columns = df.select_dtypes(exclude='number').columns
-    df.fillna(0,inplace=True)
+    df.fillna(0, inplace=True)
     # Encode categorical variables (convert them to numerical values)
     df_encoded = pd.get_dummies(df, columns=categorical_columns)
     # Calculate the correlation matrix
     corr_matrix = df_encoded.corr()
     return corr_matrix
 
-def plot_heat_map(cm_df):
+
+def plot_heat_map(cm_df: pd.DataFrame) -> str:
     plt.figure(figsize=(5, 4))
     sns.heatmap(cm_df, annot=True)
     plt.title('Correlation')
-    save_path = get_save_path(str('correlation') + '.png',addtime=True)
+    save_path = get_save_path(str('correlation') + '.png', addtime=True)
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0.1)
     plt.close()
     save_path = get_relative_path(save_path)
     return save_path
-

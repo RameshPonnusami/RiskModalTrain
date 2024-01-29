@@ -1,13 +1,16 @@
 import pandas as pd
 import numpy as np
+from typing import Union, List, Dict, Any, Tuple
 
-def convert_to_numeric_or_str(value):
+
+def convert_to_numeric_or_str(value: Union[float, int, str]) -> Union[float, int, str]:
     try:
         return pd.to_numeric(value)
     except ValueError:
         return value
 
-def get_column_info_for_ui(uidf):
+
+def get_column_info_for_ui(uidf: pd.DataFrame) -> Tuple[Dict[str, List[Any]], Dict[str, str]]:
     # Get column names and their data types
     column_info = {column: str(uidf[column].dtype) for column in uidf.columns}
     object_unique_values = {}
@@ -16,14 +19,18 @@ def get_column_info_for_ui(uidf):
             unique_list = list(uidf[ci].unique())
             filtered_list = [x for x in unique_list if not (isinstance(x, float) and np.isnan(x)) and x != 'NaN']
             object_unique_values[ci] = filtered_list
-    return object_unique_values,column_info
+    return object_unique_values, column_info
 
 
-def custom_encoder(obj):
-    def handle_item(item):
+def custom_encoder(obj: Any) -> Any:
+    def handle_item(item: Any) -> Any:
         if isinstance(item, (float, int, np.float128)):
             # Convert float, int, or float128 to string with a fixed number of decimal places
             return round(float(item), 2)
+        elif isinstance(item, np.int64):
+            # Convert numpy.int64 to Python int
+            return int(item)
+
         elif isinstance(item, str):
             # Handle strings if needed
             return item
@@ -39,7 +46,7 @@ def custom_encoder(obj):
     return handle_item(obj)
 
 
-def fil_none_values(column_changes,df):
+def fil_none_values(column_changes: List[Dict[str, Any]], df: pd.DataFrame) -> pd.DataFrame:
     for cc in column_changes:
         cname = cc['columnName']
         selected_option = cc['selectedOption']
@@ -62,4 +69,3 @@ def fil_none_values(column_changes,df):
         else:
             pass
     return df
-

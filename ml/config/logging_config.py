@@ -1,8 +1,11 @@
 import logging
 from logging.handlers import RotatingFileHandler
+from flask import Flask
+
 from .config import Config
 
-def configure_logging(app):
+
+def configure_logging(app: Flask) -> None:
     formatter = logging.Formatter(Config.LOGGING_FORMAT)
 
     file_handler = RotatingFileHandler(Config.LOGGING_LOCATION, maxBytes=10240, backupCount=10)

@@ -19,5 +19,6 @@ class Config:
     LOGGING_LEVEL = 'DEBUG'  # Adjust as needed
     VALID_USERNAME = "admin"
     VALID_PASSWORD = "admin"
+    CATEGORICAL_COLUMN_UNIQUE_SIZE = 18
 
 
