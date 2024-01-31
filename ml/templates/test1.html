@@ -1,97 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Correlation Heatmap</title>
-  <style>
-    /* Add some basic styling */
-    body {
-      font-family: Arial, sans-serif;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-
-    /* Define colors for heatmap as CSS classes */
-    .heatmap-cell-1 { background-color: #d0e8ff; } /* Light Blue */
-    .heatmap-cell-2 { background-color: #81b9e1; } /* Blue */
-    .heatmap-cell-3 { background-color: #4180c8; } /* Dark Blue */
-    .heatmap-cell-4 { background-color: #1a478f; } /* Navy Blue */
-    .heatmap-cell-5 { background-color: #5262b1; } /* Light Red */
-    .heatmap-cell-6 { background-color: #737683; } /* Red */
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Table</title>
+    <style>
+        /* Add your CSS styling here */
+    </style>
 </head>
 <body>
 
+<div class="tab-pane fade show active" id="selected-features-details-container-tab">
+        <form id="featureForm" onsubmit="submitForm(event)">
+
+    <div id="selected-features-details-container">
+        <table class="table table-bordered table-striped" border="1">
+            <thead>
+                <tr>
+                    <th>name</th>
+                    <th>type</th>
+                    <th>Impact Criteria</th>
+                    <th>Condition</th>
+                    <th>Values</th>
+                    <th>Selected Values</th>
+                    <th>Add Condition</th>
+                    <th>Duplicate Row</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Home</td>
+                    <td>categorical</td>
+                    <td>RENT,OTHER</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><input type="checkbox" name="conditionCheckbox" onclick="enableImpactCriteria(this)"></td>
+                    <td><input type="checkbox" name="duplicateCheckbox" onclick="duplicateRow(this)"></td>
+                </tr>
+                <tr>
+                    <td>Amount</td>
+                    <td>numerical</td>
+                    <td>greater than 14587.5</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><input type="checkbox" name="conditionCheckbox" onclick="enableImpactCriteria(this)"></td>
+                    <td><input type="checkbox" name="duplicateCheckbox" onclick="duplicateRow(this)"></td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>categorical</td>
+                    <td>1</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><input type="checkbox" name="conditionCheckbox" onclick="enableImpactCriteria(this)"></td>
+                    <td><input type="checkbox" name="duplicateCheckbox" onclick="duplicateRow(this)"></td>
+                </tr>
+                <tr>
+                    <td>Percent_income</td>
+                    <td>numerical</td>
+                    <td>greater than 0.205</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><input type="checkbox" name="conditionCheckbox" onclick="enableImpactCriteria(this)"></td>
+                    <td><input type="checkbox" name="duplicateCheckbox" onclick="duplicateRow(this)"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+               <div>
+            <button type="submit">Submit</button>
+        </div>
+    </form>
+</div>
+
+
 <script>
-  function generateTable(data) {
-    var table = '<table>';
+    function enableImpactCriteria(checkbox) {
+        var rowIndex = checkbox.parentNode.parentNode.rowIndex;
+        var table = document.querySelector('#selected-features-details-container table');
+        var conditionCell = table.rows[rowIndex].cells[3];
+        var valuesCell = table.rows[rowIndex].cells[4];
+        var selectedValuesCell = table.rows[rowIndex].cells[5];
 
-    // Create table header
-    table += '<thead><tr><th></th>';
-    for (var i = 0; i < data.length; i++) {
-      table += '<th>' + data[i]['index'] + '</th>';
+        if (checkbox.checked) {
+            var type = table.rows[rowIndex].cells[1].innerText.trim().toLowerCase();
+            var newConditionHTML = '<select onchange="handleConditionChange(this)">';
+            if (type === 'numerical') {
+                newConditionHTML += '<option value="lesser">Lesser Than</option><option value="lesser_equal">Lesser Than or Equal To</option><option value="greater">Greater Than</option><option value="between">Between</option>';
+            } else if (type === 'categorical') {
+                newConditionHTML += '<option value="contains">Contains</option>';
+            }
+            newConditionHTML += '</select>';
+
+            var newValuesHTML = '';
+            if (type === 'numerical') {
+                newValuesHTML = '<input type="text" placeholder="Enter values">';
+            } else if (type === 'categorical') {
+                newValuesHTML = '<select multiple onchange="updateSelectedValues(this)"><option value="value1">Value 1</option><option value="value2">Value 2</option><option value="value3">Value 3</option></select>';
+            }
+
+            conditionCell.innerHTML = newConditionHTML;
+            valuesCell.innerHTML = newValuesHTML;
+        } else {
+            conditionCell.innerHTML = '';
+            valuesCell.innerHTML = '';
+            selectedValuesCell.innerHTML = '';
+        }
     }
-    table += '</tr></thead><tbody>';
 
-    // Create table rows
-    for (var i = 0; i < data.length; i++) {
-      table += '<tr>';
-      // Add correlation index column
-      table += '<td>' + data[i]['index'] + '</td>';
-      for (var j = 0; j < data.length; j++) {
-        var value = data[i][data[j]['index']];
-        var colorClass = getColor(value);
-        table += '<td class="' + colorClass + '">' + value.toFixed(2) + '</td>';
-      }
-      table += '</tr>';
+    function handleConditionChange(selectElement) {
+        var rowIndex = selectElement.parentNode.parentNode.rowIndex;
+        var table = document.querySelector('#selected-features-details-container table');
+        var valuesCell = table.rows[rowIndex].cells[4];
+
+        if (selectElement.value === 'between') {
+            var newValuesHTML = 'From: <input type="text" placeholder="Enter lower value"> To: <input type="text" placeholder="Enter upper value">';
+            valuesCell.innerHTML = newValuesHTML;
+        } else {
+            var type = table.rows[rowIndex].cells[1].innerText.trim().toLowerCase();
+            var newValuesHTML = '';
+            if (type === 'numerical') {
+                newValuesHTML = '<input type="text" placeholder="Enter values">';
+            } else if (type === 'categorical') {
+                newValuesHTML = '<select multiple onchange="updateSelectedValues(this)"><option value="value1">Value 1</option><option value="value2">Value 2</option><option value="value3">Value 3</option></select>';
+            }
+            valuesCell.innerHTML = newValuesHTML;
+        }
     }
 
-    table += '</tbody></table>';
-    return table;
-  }
+    function updateSelectedValues(selectElement) {
+        var rowIndex = selectElement.parentNode.parentNode.rowIndex;
+        var table = document.querySelector('#selected-features-details-container table');
+        var selectedValuesCell = table.rows[rowIndex].cells[5];
+        var selectedValues = Array.from(selectElement.selectedOptions).map(option => option.value).join(', ');
 
-  function getColor(value) {
-    // You can customize this function to map values to color classes as per your requirements
-    // For simplicity, this example uses predefined classes for different ranges
-    if (value >= 0.8 ||  value <= -0.8)  {
-      return 'heatmap-cell-1';
-    } else if (value >= 0.6  ||  value <= -0.6) {
-      return 'heatmap-cell-2';
-    } else if (value >= 0.4  || value <= -0.4) {
-      return 'heatmap-cell-3';
-    } else if (value >= 0.2 || value <= -0.2) {
-      return 'heatmap-cell-4';
-    } else if (value >= -0.2) {
-      return 'heatmap-cell-5';
-    } else {
-      return 'heatmap-cell-6';
+        selectedValuesCell.innerHTML = selectedValues;
     }
-  }
-  // Example data
-  var correlationData = [
-    {'index': 'grade', 'grade': 1.0, 'annual_inc': 0.0054441397354406335, 'home_ownership': 0.08295875882958355, 'dti': 0.06429265569343882, 'purpose': 0.20464436290951332, 'term': 0.3537979696222608, 'revol_util': 0.16843218702728885, 'bad_loan': 0.18869429501710358},
-    {'index': 'annual_inc', 'grade': 0.0054441397354406335, 'annual_inc': 1.0, 'home_ownership': 0.19183170421873416, 'dti': 0.14105609914981013, 'purpose': 0.021732765294629756, 'term': -0.11431298629614177, 'revol_util': -0.05260793506821007, 'bad_loan': 0.12302944304095516},
-    {'index': 'home_ownership', 'grade': 0.08295875882958355, 'annual_inc': 0.19183170421873416, 'home_ownership': 1.0, 'dti': 0.013097107661500643, 'purpose': 0.04891392700096266, 'term': -0.09137978111525066, 'revol_util': 0.013428536685818582, 'bad_loan': 0.06874795954709552},
-    {'index': 'dti', 'grade': 0.06429265569343882, 'annual_inc': 0.14105609914981013, 'home_ownership': 0.013097107661500643, 'dti': 1.0, 'purpose': -0.028120642129720676, 'term': 0.04241080861993266, 'revol_util': 0.054333180518763645, 'bad_loan': 0.11843738062057005},
-    {'index': 'purpose', 'grade': 0.20464436290951332, 'annual_inc': 0.021732765294629756, 'home_ownership': 0.04891392700096266, 'dti': -0.028120642129720676, 'purpose': 1.0, 'term': -0.02241860957265085, 'revol_util': -0.017087883774760636, 'bad_loan': 0.05437150307992627},
-    {'index': 'term', 'grade': 0.3537979696222608, 'annual_inc': -0.11431298629614177, 'home_ownership': -0.09137978111525066, 'dti': 0.04241080861993266, 'purpose': -0.02241860957265085, 'term': 1.0, 'revol_util': 0.06002353279332895, 'bad_loan': 0.13112421088894832},
-    {'index': 'revol_util', 'grade': 0.16843218702728885, 'annual_inc': -0.05260793506821007, 'home_ownership': 0.013428536685818582, 'dti': 0.054333180518763645, 'purpose': -0.017087883774760636, 'term': 0.06002353279332895, 'revol_util': 1.0, 'bad_loan': 0.07283137861585783},
-    {'index': 'bad_loan', 'grade': 0.18869429501710358, 'annual_inc': 0.12302944304095516, 'home_ownership': 0.06874795954709552, 'dti': 0.11843738062057005, 'purpose': 0.05437150307992627, 'term': 0.13112421088894832, 'revol_util': 0.07283137861585783, 'bad_loan': 1.0}
-  ];
 
-  // Display table with heatmap
-  var tableHtml = generateTable(correlationData);
-  document.body.innerHTML += tableHtml;
+    function duplicateRow(checkbox) {
+        if (checkbox.checked) {
+            var rowIndex = checkbox.parentNode.parentNode.rowIndex;
+            var table = document.querySelector('#selected-features-details-container table');
+            var newRow = table.insertRow(rowIndex + 1);
+
+            for (var i = 0; i < table.rows[rowIndex].cells.length; i++) {
+                var newCell = newRow.insertCell(i);
+                newCell.innerHTML = table.rows[rowIndex].cells[i].innerHTML;
+            }
+        }
+    }
+
+    // ----------------------
+
+
+    function submitForm(event) {
+        event.preventDefault();
+
+        // Collect data from the form
+        var formData = collectFormData();
+
+        // Now, you can send formData to the backend using an appropriate method, such as fetch or XMLHttpRequest.
+        console.log('Form data:', formData);
+
+        // For example, using fetch:
+        /*
+        fetch('your-backend-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            // Handle success response from the backend
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            // Handle error
+        });
+        */
+    }
+
+    function collectFormData() {
+        var formData = {
+            conditions: []
+        };
+
+        var table = document.querySelector('#selected-features-details-container table');
+        var rows = table.getElementsByTagName('tr');
+
+        for (var i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
+            var condition = {
+                name: rows[i].cells[0].innerText.trim(),
+                type: rows[i].cells[1].innerText.trim(),
+                impactCriteria: rows[i].cells[2].innerText.trim(),
+                conditionType: '',
+                values: '',
+                selectedValues: '',
+                addCondition: false,
+                duplicateRow: false
+            };
+
+            // Collect checkbox values
+            var conditionCheckbox = rows[i].cells[6].querySelector('input[type="checkbox"]');
+            condition.addCondition = conditionCheckbox ? conditionCheckbox.checked : false;
+
+            var duplicateCheckbox = rows[i].cells[7].querySelector('input[type="checkbox"]');
+            condition.duplicateRow = duplicateCheckbox ? duplicateCheckbox.checked : false;
+
+            var conditionCell = rows[i].cells[3];
+            if (conditionCell.children.length > 0) {
+                var selectElement = conditionCell.children[0];
+                condition.conditionType = selectElement.value;
+            }
+
+            var valuesCell = rows[i].cells[4];
+            if (valuesCell.children.length > 0) {
+                if (condition.type === 'numerical') {
+                    condition.values = valuesCell.children[0].value;
+                } else if (condition.type === 'categorical') {
+                    var selectElement = valuesCell.children[0];
+                    condition.selectedValues = Array.from(selectElement.selectedOptions).map(option => option.value);
+                }
+            }
+
+            formData.conditions.push(condition);
+        }
+
+        return formData;
+    }
+
+
 </script>
 
 </body>

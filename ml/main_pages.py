@@ -122,6 +122,8 @@ def model_train() -> Union[str, Response]:
 
         column_info.pop(target_column, None)
 
+        print(selected_features_details_list)
+
         return json.dumps({"coef": coef_records, "pvalue": pvalue_records, 'threshold': threshold,
                            "selected_features": list(selected_features),
                            "chartDetails": all_chart_details,
@@ -245,3 +247,11 @@ def predict() -> Union[str, Response]:
             return render_template('predict.html')
     except Exception as e:
         return render_template('error.html', error_message=str(e))
+
+
+@app.route('/testapi', methods=['POST','GET'])
+def testapi():
+    if request.method == 'POST':
+        print(request.json)
+        return {"msg":"hi"}
+    return render_template('test1.html')
