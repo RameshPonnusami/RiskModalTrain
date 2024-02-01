@@ -11,6 +11,7 @@
      <script src="{{ url_for('static', filename='js/loadModelTrainData.js') }}"></script>
      <script src="{{ url_for('static', filename='js/modelUserInputForm.js') }}"></script>
      <script src="{{ url_for('static', filename='js/eventHandlerTasks.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/selectCriteria.js') }}"></script>
     <link href="{{ url_for('static',filename='styles/modelTrainStyles.css') }}" rel="stylesheet">
 
     <style>
@@ -100,36 +101,16 @@
     </li>
     <li class="nav-item">
         <a class="nav-link" name="charts-container-tab" data-toggle="tab"  >EDA  </a>
-    </li>
-       <li class="nav-item">
-        <a class="nav-link active" name="coef-tab" data-toggle="tab" >Modal Details </a>
-    </li>
+
 <!--    <li class="nav-item">-->
 <!--        <a class="nav-link" name="pvalue-tab" data-toggle="tab" >P-Value </a>-->
 <!--    </li>-->
-    <li class="nav-item">
-        <a class="nav-link" name="dynamicFormContainer-tab" data-toggle="tab"  >Get Score </a>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link" name="testdata-container-tab" data-toggle="tab"  >Test-Data </a>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link" name="traindata-container-tab" data-toggle="tab"  >Train-Data </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" name="dsa-container-tab" data-toggle="tab"  >Descriptive statistics</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" name="corr-container-tab" data-toggle="tab"  >Correlation</a>
-    </li>
 
 
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade show active" id="coef-tab">
+    <div class="tab-pane fade " id="coef-tab">
         <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
             <div class="col-md-8 mx-auto bg-white">
 
@@ -139,11 +120,17 @@
         </div>
     </div>
 
-    <div class="tab-pane fade" id="threshold-container-tab">
+    <div class="tab-pane fade show active " id="threshold-container-tab">
         <div id="threshold-container"></div>
     </div>
     <div class="tab-pane fade" id="selected-features-details-container-tab">
+      <form id="featureForm" onsubmit="submitForm(event)">
+
         <div id="selected-features-details-container"></div>
+          <div>
+            <button type="submit" >Submit</button>
+        </div>
+      </form>
     </div>
     <div class="tab-pane fade" id="charts-container-tab">
         <div id="charts-container">

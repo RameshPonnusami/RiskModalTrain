@@ -34,9 +34,12 @@ $(document).ready(function() {
             }
         });
     });
+
+
+
     
 
-    $('#selectTargetColumnButton').click(function() {
+    $('#selectTargetColumnButton1').click(function() {
         selectedOptionsList = GenerateFillNaForm();        
         var selectedTargetColumn = $('#targetColumnSelect').val();
         $("#loader").show();
@@ -105,7 +108,7 @@ $(document).ready(function() {
                 const modifiedList = SelectedfeaturesDetails.map(dict => removeKeyFromDict(dict, keyToRemove));
 //                console.log(modifiedList);
                 
-                var SelectedfeaturesDetailsTable = generateTable(modifiedList);
+                var SelectedfeaturesDetailsTable = generateTableWithOption(modifiedList);
                 
                 var selectedFeaturesList = generateList(response.selected_features);
                 
@@ -131,5 +134,67 @@ $(document).ready(function() {
         });
     });
 
-    
+
+
+
+    $('#selectTargetColumnButton').click(function() {
+        selectedOptionsList = GenerateFillNaForm();
+        var selectedTargetColumn = $('#targetColumnSelect').val();
+        $("#loader").show();
+
+        $.ajax({
+            url: '/EDA',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ target_column: selectedTargetColumn, file_path: uploadedFilePath ,column_changes:selectedOptionsList}),
+            success: function(response) {
+//                console.log('Target column selected successfully:',response);
+                response = JSON.parse(response);
+                // Assume you have received data for each step in the response
+                var recordDetails = response.threshold;
+
+                var chartDetails = response.chartDetails;
+                var SelectedfeaturesDetails = response.selected_features_details;
+
+
+                document.getElementById('testdata-container').innerHTML = '';
+                document.getElementById('traindata-container').innerHTML = '';
+                document.getElementById('testdata-charts-container').innerHTML = '';
+                document.getElementById('traindata-charts-container').innerHTML = '';
+                document.getElementById('charts-container').innerHTML = '';
+
+                var thresholdTable = generateDictTable(response.threshold);
+
+                // Key to remove from each dictionary
+                const keyToRemove = 'criteria';
+
+                // Create a new list by removing the specified key from each dictionary
+                const modifiedList = SelectedfeaturesDetails.map(dict => removeKeyFromDict(dict, keyToRemove));
+//                console.log(modifiedList);
+
+                var SelectedfeaturesDetailsTable = generateTableWithOption(modifiedList);
+
+                var selectedFeaturesList = generateList(response.selected_features);
+
+                // Insert the HTML table and list into div elements with the IDs 'threshold-container' and 'selected-features-container'
+                $('#threshold-container').html(thresholdTable);
+                $('#selected-features-details-container').html(SelectedfeaturesDetailsTable);
+
+                updateCharts(chartDetails,'line_chart') ;
+                updateCharts(chartDetails,'bar_chart') ;
+
+                $("#myTabs").show();
+                $(".tab-content").show();
+                $("#loader").hide();
+                // Handle the response as needed
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error selecting target column:', textStatus, errorThrown);
+                $("#loader").hide();
+            }
+
+        });
+    });
+
+
 });

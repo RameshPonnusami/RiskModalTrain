@@ -143,7 +143,8 @@ def performance_metrics(log_reg: smf.logit, test_df: pd.DataFrame, target_column
     return performance_metrics_dict
 
 
-def split_train_test_dataset(traindf: pd.DataFrame, target_column: str, test_size: float = 0.2) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def split_train_test_dataset(traindf: pd.DataFrame, target_column: str, test_size: float = 0.2) -> Tuple[
+    pd.DataFrame, pd.DataFrame]:
     # Specify your features (X) and target variable (y)
     X = traindf.drop(target_column, axis=1)  # Adjust the column name accordingly
     y = traindf[target_column]
@@ -165,10 +166,10 @@ def get_dsa(ipdf: pd.DataFrame) -> List[Dict]:
     return de.to_dict('records')
 
 
-def process_train_data(traindf: pd.DataFrame, target_column: str) -> Tuple[str, smf.logit, Dict, np.ndarray, List[Dict], Dict, str]:
-    # target_column = 'bad_loan'
+def process_EDA(traindf: pd.DataFrame, target_column: str, test_size=0.2) -> Tuple[
+    np.ndarray, List[dict], pd.DataFrame, np.ndarray, dict]:
 
-    ipdata, ip_test_data = split_train_test_dataset(traindf, target_column, test_size=0.2)
+    ipdata, ip_test_data = split_dataset(traindf, target_column, test_size=test_size)
 
     threshold = {"Total Records": len(ipdata[target_column]),
                  "Target Count": len(ipdata[ipdata[target_column] == 1]),
@@ -177,14 +178,32 @@ def process_train_data(traindf: pd.DataFrame, target_column: str) -> Tuple[str, 
                  }
 
     variable_names = list(ipdata.columns[1:])
-    target = target_column
 
     # Analysis the Optimal Binning and get Report
-    selected_features, selected_features_bin = process_opt_bin(variable_names, ipdata, threshold, target)
+    selected_features, selected_features_bin = process_opt_bin(variable_names, ipdata, threshold, target_column)
     selected_features_names = selected_features['name'].unique()
 
     selected_features_and_bin_data_list = generate_selected_features(selected_features, selected_features_bin)
-    selected_features_names_with_target = np.append(selected_features_names, target)
+    selected_features_names_with_target = np.append(selected_features_names, target_column)
+
+    return selected_features_names_with_target, selected_features_and_bin_data_list, selected_features, selected_features_names, threshold
+
+
+def split_dataset(traindf: pd.DataFrame, target_column: str, test_size=0.2) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    ipdata, ip_test_data = split_train_test_dataset(traindf, target_column, test_size=test_size)
+    return ipdata, ip_test_data
+
+
+
+def process_train_data(traindf: pd.DataFrame, target_column: str) -> Tuple[
+    str, smf.logit, Dict, np.ndarray, List[Dict], Dict, str]:
+    # target_column = 'bad_loan'
+
+    ipdata, ip_test_data = split_dataset(traindf, target_column, test_size=0.2)
+
+    target = target_column
+    selected_features_names_with_target, selected_features_and_bin_data_list, selected_features, selected_features_names, threshold = process_EDA(
+        traindf, target_column)
 
     dsa_dict = get_dsa(ipdata)
     corr_df = get_corr(ipdata)

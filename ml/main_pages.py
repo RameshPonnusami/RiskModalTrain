@@ -11,7 +11,7 @@ from typing import Union, Any
 
 from .config.config import Config
 
-from .EDA.binning_algorithm import format_criteria_for_ui, process_train_data
+from .EDA.binning_algorithm import format_criteria_for_ui, process_train_data, process_EDA
 from .EDA.generate_chart import process_charts
 from .EDA.test_data import generate_predict_data
 from .utils.common_ops import assign_color
@@ -65,6 +65,34 @@ def login() -> Union[None, str]:
 def logout() -> Response:
     session.pop('username', None)
     return redirect(url_for('login'))
+
+@app.route('/EDA', methods=['GET', 'POST'])
+@login_required
+def EDA() -> Union[str, Response]:
+    if request.method == 'POST':
+        # Get the selected target column from the AJAX request
+        target_column = request.json.get('target_column')
+        file_path = request.json.get('file_path')
+        column_changes = request.json.get('column_changes')
+
+        traindf = pd.read_csv(file_path)
+        traindf = fil_none_values(column_changes, traindf)
+        # Process the target column as needed
+        # For example, print or store the selected target column
+        # print('Selected Target Column:', target_column)
+
+        traindf = traindf.applymap(convert_to_numeric_or_str)
+
+        all_chart_details = process_charts(traindf, target_column)
+
+        selected_features_names_with_target, selected_features_and_bin_data_list, selected_features, selected_features_names, threshold = process_EDA(traindf,target_column)
+        selected_features_details_list = format_criteria_for_ui(selected_features_and_bin_data_list)
+        return json.dumps({'threshold': threshold,
+                           "selected_features": list(selected_features),
+                           "chartDetails": all_chart_details,
+                           "selected_features_details": selected_features_details_list,
+
+                           }, default=custom_encoder)
 
 
 @app.route('/model_train', methods=['GET', 'POST'])
@@ -122,7 +150,7 @@ def model_train() -> Union[str, Response]:
 
         column_info.pop(target_column, None)
 
-        print(selected_features_details_list)
+
 
         return json.dumps({"coef": coef_records, "pvalue": pvalue_records, 'threshold': threshold,
                            "selected_features": list(selected_features),
