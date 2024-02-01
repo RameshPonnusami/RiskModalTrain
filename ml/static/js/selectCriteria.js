@@ -4,7 +4,7 @@ function generateTableWithOption(data) {
     // Create table header
     for (var key in data[0]) {
         if (key === 'criteria') {
-            table += '<th>' + key + '</th>';
+            table += '<th style="display:none;" >' + key + '</th>';
         } else {
             table += '<th>' + key.charAt(0).toUpperCase() + key.slice(1) + '</th>';
         }
@@ -18,7 +18,7 @@ function generateTableWithOption(data) {
         table += '<tr>';
         for (var key in data[i]) {
             if (key === 'criteria') {
-                table += '<td>' + data[i][key].join(', ') + '</td>';
+                table += '<td style="display:none;" >' + data[i][key].join(', ') + '</td>';
             } else {
                 table += '<td>' + data[i][key] + '</td>';
             }
@@ -42,9 +42,9 @@ function generateTableWithOption(data) {
  function enableImpactCriteria(checkbox) {
         var rowIndex = checkbox.parentNode.parentNode.rowIndex;
         var table = document.querySelector('#selected-features-details-container table');
-        var conditionCell = table.rows[rowIndex].cells[4];
-        var valuesCell = table.rows[rowIndex].cells[5];
-        var selectedValuesCell = table.rows[rowIndex].cells[6];
+        var conditionCell = table.rows[rowIndex].cells[5];
+        var valuesCell = table.rows[rowIndex].cells[6];
+        var selectedValuesCell = table.rows[rowIndex].cells[7];
 
         if (checkbox.checked) {
             var type = table.rows[rowIndex].cells[1].innerText.trim().toLowerCase();
@@ -65,6 +65,9 @@ function generateTableWithOption(data) {
 
             conditionCell.innerHTML = newConditionHTML;
             valuesCell.innerHTML = newValuesHTML;
+            var conditionCheckbox = table.rows[rowIndex].cells[7];
+            conditionCheckbox.innerHTML = '<td><input type="checkbox" name="duplicateCheckbox" onclick="duplicateRow(this)"></td>';
+
         } else {
             conditionCell.innerHTML = '';
             valuesCell.innerHTML = '';
@@ -75,7 +78,7 @@ function generateTableWithOption(data) {
     function handleConditionChange(selectElement) {
         var rowIndex = selectElement.parentNode.parentNode.rowIndex;
         var table = document.querySelector('#selected-features-details-container table');
-        var valuesCell = table.rows[rowIndex].cells[5];
+        var valuesCell = table.rows[rowIndex].cells[6];
 
         if (selectElement.value === 'between') {
             var newValuesHTML = 'From: <input type="text" placeholder="Enter lower value"> To: <input type="text" placeholder="Enter upper value">';
@@ -95,7 +98,7 @@ function generateTableWithOption(data) {
     function updateSelectedValues(selectElement) {
         var rowIndex = selectElement.parentNode.parentNode.rowIndex;
         var table = document.querySelector('#selected-features-details-container table');
-        var selectedValuesCell = table.rows[rowIndex].cells[5];
+        var selectedValuesCell = table.rows[rowIndex].cells[6];
         var selectedValues = Array.from(selectElement.selectedOptions).map(option => option.value).join(', ');
 
         selectedValuesCell.innerHTML = selectedValues;
@@ -109,43 +112,34 @@ function generateTableWithOption(data) {
 
             for (var i = 0; i < table.rows[rowIndex].cells.length; i++) {
                 var newCell = newRow.insertCell(i);
+                 // Clone the content of each cell
+                if (table.rows[rowIndex].cells[i].style.display === 'none') {
+                    // For hidden columns
+                    newCell.style.display = 'none';
+                }
+
+            if (i===6){
+                newValuesHTML = '<input type="text" placeholder="Enter values">';
+                newCell.innerHTML=newValuesHTML;
+            }
+            else{
                 newCell.innerHTML = table.rows[rowIndex].cells[i].innerHTML;
             }
+             // Find the checkbox in the newly duplicated row and check it
+
+            }
+             var checkboxIndex = 4;
+             newRow.cells[checkboxIndex].querySelector('input[type="checkbox"]').checked = true;
+
+
+
+
         }
     }
 
     // ----------------------
 
 
-    function submitForm(event) {
-        event.preventDefault();
-
-        // Collect data from the form
-        var formData = collectFormData();
-
-        // Now, you can send formData to the backend using an appropriate method, such as fetch or XMLHttpRequest.
-        console.log('Form data:', formData);
-
-        // For example, using fetch:
-
-        fetch('model_train', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-            // Handle success response from the backend
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            // Handle error
-        });
-
-    }
 
     function collectFormData() {
         var formData = {
@@ -167,22 +161,29 @@ function generateTableWithOption(data) {
             };
 
             // Collect checkbox values
-            var conditionCheckbox = rows[i].cells[3].querySelector('input[type="checkbox"]');
+            var conditionCheckbox = rows[i].cells[4].querySelector('input[type="checkbox"]');
             condition.addCondition = conditionCheckbox ? conditionCheckbox.checked : false;
 
-            var duplicateCheckbox = rows[i].cells[6].querySelector('input[type="checkbox"]');
+            var duplicateCheckbox = rows[i].cells[7].querySelector('input[type="checkbox"]');
             condition.duplicateRow = duplicateCheckbox ? duplicateCheckbox.checked : false;
 
-            var conditionCell = rows[i].cells[4];
+            var conditionCell = rows[i].cells[5];
             if (conditionCell.children.length > 0) {
                 var selectElement = conditionCell.children[0];
                 condition.conditionType = selectElement.value;
             }
 
-            var valuesCell = rows[i].cells[5];
+            var valuesCell = rows[i].cells[6];
             if (valuesCell.children.length > 0) {
                 if (condition.type === 'numerical') {
+                    if(condition.conditionType=='between'){
                     condition.values = valuesCell.children[0].value;
+                    condition.values +=', '
+                    condition.values += valuesCell.children[1].value;
+                    }
+                    else{
+                    condition.values = valuesCell.children[0].value;
+                    }
                 } else if (condition.type === 'categorical') {
                      condition.values = valuesCell.children[0].value;
                 }
@@ -199,4 +200,5 @@ function generateTableWithOption(data) {
         var row = button.parentNode.parentNode;
         row.parentNode.removeChild(row);
     }
+
 

@@ -160,6 +160,15 @@ def split_train_test_dataset(traindf: pd.DataFrame, target_column: str, test_siz
     return ipdata, ip_test_data
 
 
+def calculate_threshold(ipdata: pd.DataFrame,target_column: str) -> dict:
+    threshold = {"Total Records": len(ipdata[target_column]),
+                 "Target Count": len(ipdata[ipdata[target_column] == 1]),
+                 "Risk Average": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)),
+                 "Risk Percentage": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)) * 100
+                 }
+    return threshold
+
+
 def get_dsa(ipdf: pd.DataFrame) -> List[Dict]:
     de = ipdf.describe().T.reset_index()
     de.rename(columns={"index": "FieldName"}, inplace=True)
@@ -171,11 +180,7 @@ def process_EDA(traindf: pd.DataFrame, target_column: str, test_size=0.2) -> Tup
 
     ipdata, ip_test_data = split_dataset(traindf, target_column, test_size=test_size)
 
-    threshold = {"Total Records": len(ipdata[target_column]),
-                 "Target Count": len(ipdata[ipdata[target_column] == 1]),
-                 "Risk Average": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)),
-                 "Risk Percentage": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)) * 100
-                 }
+    threshold = calculate_threshold(ipdata,target_column)
 
     variable_names = list(ipdata.columns[1:])
 
@@ -202,6 +207,9 @@ def process_train_data(traindf: pd.DataFrame, target_column: str) -> Tuple[
     ipdata, ip_test_data = split_dataset(traindf, target_column, test_size=0.2)
 
     target = target_column
+
+    threshold = calculate_threshold(ipdata, target_column)
+
     selected_features_names_with_target, selected_features_and_bin_data_list, selected_features, selected_features_names, threshold = process_EDA(
         traindf, target_column)
 

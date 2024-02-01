@@ -84,12 +84,7 @@
 <div id="loader" style="display: none; text-align: center;">
   <img src="static/gifs/Blinkingsquares.gif" alt="Loading...">
 </div>
-     <!-- Progress bar -->
-    <div id="progress-bar">
-        <div id="step1" style="background-color:#4CAF50;"></div>
-        <div id="step2" style="background-color:#4CAF50;"></div>
-        <div id="step3" style="background-color:#4CAF50;"></div>
-    </div>
+
 
 <ul class="nav nav-tabs sticky-top" id="myTabs">
 
@@ -102,32 +97,21 @@
     <li class="nav-item">
         <a class="nav-link" name="charts-container-tab" data-toggle="tab"  >EDA  </a>
 
-<!--    <li class="nav-item">-->
-<!--        <a class="nav-link" name="pvalue-tab" data-toggle="tab" >P-Value </a>-->
-<!--    </li>-->
-
-
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade " id="coef-tab">
-        <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
-            <div class="col-md-8 mx-auto bg-white">
 
-                 <div id="pvalue"></div>
-                 <div id="coef"></div>
-            </div>
-        </div>
-    </div>
 
     <div class="tab-pane fade show active " id="threshold-container-tab">
         <div id="threshold-container"></div>
     </div>
     <div class="tab-pane fade" id="selected-features-details-container-tab">
-      <form id="featureForm" onsubmit="submitForm(event)">
+      <form id="featureForm" >
 
         <div id="selected-features-details-container"></div>
           <div>
+
+                <br>
             <button type="submit" >Submit</button>
         </div>
       </form>
@@ -137,6 +121,48 @@
         </div>
     </div>
 
+
+
+
+
+</div>
+
+
+<ul class="nav nav-tabs sticky-top" id="modelTabs">
+  <li class="nav-item">
+        <a class="nav-link active" name="coef-tab" data-toggle="tab" >Modal Details </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" name="dynamicFormContainer-tab" data-toggle="tab"  >Get Score </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" name="testdata-container-tab" data-toggle="tab"  >Test-Data </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" name="traindata-container-tab" data-toggle="tab"  >Train-Data </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="dsa-container-tab" data-toggle="tab"  >Descriptive statistics</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" name="corr-container-tab" data-toggle="tab"  >Correlation</a>
+    </li>
+
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active show" id="coef-tab">
+        <div class="row gy-4 gy-xl-5 p-4 p-xl-5">
+            <div class="col-md-8 mx-auto bg-white">
+
+                 <div id="pvalue"></div>
+                 <div id="coef"></div>
+            </div>
+        </div>
+    </div>>
 
     <div class="container mt-4 tab-pane fade"  id="dynamicFormContainer-tab">
         <div class="row">
@@ -184,10 +210,7 @@
 
     </div>
 
-
-
 </div>
-
 
     <div id="image-viewer">
 <span class="close">&times;</span>

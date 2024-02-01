@@ -4,7 +4,7 @@ from utils import fil_none_values, convert_to_numeric_or_str, get_column_info_fo
 from . import app
 from flask import render_template, request, jsonify, redirect, url_for, Response
 from flask import session
-from functools import wraps
+
 import pandas as pd
 import joblib
 from typing import Union, Any
@@ -15,19 +15,12 @@ from .EDA.binning_algorithm import format_criteria_for_ui, process_train_data, p
 from .EDA.generate_chart import process_charts
 from .EDA.test_data import generate_predict_data
 from .utils.common_ops import assign_color
-
+from .custom_annotations import login_required
 VALID_USERNAME = Config.VALID_USERNAME
 VALID_PASSWORD = Config.VALID_PASSWORD
 
 
-def login_required(view_func) -> callable:
-    @wraps(view_func)
-    def decorated_function(*args, **kwargs):
-        if 'username' not in session or not session['username']:
-            return redirect(url_for('login'))
-        return view_func(*args, **kwargs)
 
-    return decorated_function
 
 
 # Render the main page with the input form and charts
