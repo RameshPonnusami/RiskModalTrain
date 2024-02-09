@@ -168,30 +168,30 @@ def get_dsa(ipdf: pd.DataFrame) -> List[Dict]:
 def process_train_data(traindf: pd.DataFrame, target_column: str) -> Tuple[str, smf.logit, Dict, np.ndarray, List[Dict], Dict, str]:
     # target_column = 'bad_loan'
 
-    ipdata, ip_test_data = split_train_test_dataset(traindf, target_column, test_size=0.2)
+    # ipdata, ip_test_data = split_train_test_dataset(traindf, target_column, test_size=0.2)
 
-    threshold = {"Total Records": len(ipdata[target_column]),
-                 "Target Count": len(ipdata[ipdata[target_column] == 1]),
-                 "Risk Average": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)),
-                 "Risk Percentage": (len(ipdata[ipdata[target_column] == 1]) / len(ipdata)) * 100
+    threshold = {"Total Records": len(traindf[target_column]),
+                 "Target Count": len(traindf[traindf[target_column] == 1]),
+                 "Risk Average": (len(traindf[traindf[target_column] == 1]) / len(traindf)),
+                 "Risk Percentage": (len(traindf[traindf[target_column] == 1]) / len(traindf)) * 100
                  }
 
-    variable_names = list(ipdata.columns[1:])
+    variable_names = list(traindf.columns[1:])
     target = target_column
 
     # Analysis the Optimal Binning and get Report
-    selected_features, selected_features_bin = process_opt_bin(variable_names, ipdata, threshold, target)
+    selected_features, selected_features_bin = process_opt_bin(variable_names, traindf, threshold, target)
     selected_features_names = selected_features['name'].unique()
 
     selected_features_and_bin_data_list = generate_selected_features(selected_features, selected_features_bin)
     selected_features_names_with_target = np.append(selected_features_names, target)
 
-    dsa_dict = get_dsa(ipdata)
-    corr_df = get_corr(ipdata)
+    dsa_dict = get_dsa(traindf)
+    corr_df = get_corr(traindf)
     corr_df.fillna(0, inplace=True)
     corr_ip_df = corr_df.reset_index()
 
-    model_input_data = ipdata[selected_features_names_with_target].copy()
+    model_input_data = traindf[selected_features_names_with_target].copy()
 
     model_input_data = do_manual_optimal_binning(selected_features_and_bin_data_list, model_input_data)
 
@@ -214,16 +214,16 @@ def process_train_data(traindf: pd.DataFrame, target_column: str) -> Tuple[str, 
     # ipdata = X_train.copy()
     # ipdata[target] = y_train
     model_input_data = model_input_data.dropna()
-
+    ipdata, ip_test_data = split_train_test_dataset(model_input_data, target_column, test_size=0.2)
     logit_str = target + " ~ " + features_string
-    log_reg = smf.logit(logit_str, data=model_input_data).fit()
+    log_reg = smf.logit(logit_str, data=ipdata).fit()
 
     train_df_score, y_test, y_pred_binary, sc, y_pred = predict_bulk_df(model_input_data, target_column, log_reg)
     save_path, DecileScoreDf = plot_test_decile(train_df_score, sc, target_column)
 
-    model_ip_test_data = do_manual_optimal_binning(selected_features_and_bin_data_list, ip_test_data)
+    # model_ip_test_data = do_manual_optimal_binning(selected_features_and_bin_data_list, ip_test_data)
 
-    performance_metrics_dict = performance_metrics(log_reg, model_ip_test_data[selected_features_names_with_target],
+    performance_metrics_dict = performance_metrics(log_reg, ip_test_data[selected_features_names_with_target],
                                                    target_column)
     performance_metrics_dict['trainDecileWithScore'] = DecileScoreDf
     performance_metrics_dict['trainDecileChart'] = save_path
