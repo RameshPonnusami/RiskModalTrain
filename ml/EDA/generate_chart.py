@@ -173,7 +173,7 @@ def process_charts(df: pd.DataFrame, target_column: str) -> Dict[str, List[Dict[
             try:
                 save_path, FinalDataFrame = plot_regression_decile(ac, df, target=target_column)
                 chart_details = {}
-                chart_details['feature'] = cl
+                chart_details['feature'] = ac
                 chart_details['chart_path'] = save_path
                 chart_details['table_data'] = FinalDataFrame.to_dict("records")
                 line_chart_details_list.append(chart_details)
