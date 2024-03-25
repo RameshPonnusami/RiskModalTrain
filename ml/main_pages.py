@@ -4,30 +4,23 @@ from utils import fil_none_values, convert_to_numeric_or_str, get_column_info_fo
 from . import app
 from flask import render_template, request, jsonify, redirect, url_for, Response
 from flask import session
-from functools import wraps
+
 import pandas as pd
 import joblib
 from typing import Union, Any
 
 from .config.config import Config
 
-from .EDA.binning_algorithm import format_criteria_for_ui, process_train_data
+from .EDA.binning_algorithm import format_criteria_for_ui, process_train_data, process_EDA
 from .EDA.generate_chart import process_charts
 from .EDA.test_data import generate_predict_data
 from .utils.common_ops import assign_color
-
+from .custom_annotations import login_required
 VALID_USERNAME = Config.VALID_USERNAME
 VALID_PASSWORD = Config.VALID_PASSWORD
 
 
-def login_required(view_func) -> callable:
-    @wraps(view_func)
-    def decorated_function(*args, **kwargs):
-        if 'username' not in session or not session['username']:
-            return redirect(url_for('login'))
-        return view_func(*args, **kwargs)
 
-    return decorated_function
 
 
 # Render the main page with the input form and charts
@@ -65,6 +58,34 @@ def login() -> Union[None, str]:
 def logout() -> Response:
     session.pop('username', None)
     return redirect(url_for('login'))
+
+@app.route('/EDA', methods=['GET', 'POST'])
+@login_required
+def EDA() -> Union[str, Response]:
+    if request.method == 'POST':
+        # Get the selected target column from the AJAX request
+        target_column = request.json.get('target_column')
+        file_path = request.json.get('file_path')
+        column_changes = request.json.get('column_changes')
+
+        traindf = pd.read_csv(file_path)
+        traindf = fil_none_values(column_changes, traindf)
+        # Process the target column as needed
+        # For example, print or store the selected target column
+        # print('Selected Target Column:', target_column)
+
+        traindf = traindf.applymap(convert_to_numeric_or_str)
+
+        all_chart_details = process_charts(traindf, target_column)
+
+        selected_features_names_with_target, selected_features_and_bin_data_list, selected_features, selected_features_names, threshold = process_EDA(traindf,target_column)
+        selected_features_details_list = format_criteria_for_ui(selected_features_and_bin_data_list)
+        return json.dumps({'threshold': threshold,
+                           "selected_features": list(selected_features),
+                           "chartDetails": all_chart_details,
+                           "selected_features_details": selected_features_details_list,
+
+                           }, default=custom_encoder)
 
 
 @app.route('/model_train', methods=['GET', 'POST'])
@@ -121,6 +142,8 @@ def model_train() -> Union[str, Response]:
         object_unique_values, column_info = get_column_info_for_ui(traindf[list(selected_features)])
 
         column_info.pop(target_column, None)
+
+
 
         return json.dumps({"coef": coef_records, "pvalue": pvalue_records, 'threshold': threshold,
                            "selected_features": list(selected_features),
@@ -245,3 +268,11 @@ def predict() -> Union[str, Response]:
             return render_template('predict.html')
     except Exception as e:
         return render_template('error.html', error_message=str(e))
+
+
+@app.route('/testapi', methods=['POST','GET'])
+def testapi():
+    if request.method == 'POST':
+        print(request.json)
+        return {"msg":"hi"}
+    return render_template('test1.html')

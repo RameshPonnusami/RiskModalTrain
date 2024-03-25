@@ -19,6 +19,20 @@ $(document).ready(function() {
         //$(this).tab("active");
         //$('#'+tabId).addClass("active");
 
+    });    // Event handler for tab click
+    $("#modelTabs a").on("click", function (e) {
+        e.preventDefault();
+        var tabId = $(this).attr("name");
+        // Assuming the content for all tabs is already loaded, simply show the tab
+        $('.fade').removeClass("show");
+        $('.fade').removeClass("active");
+        $('#'+tabId).addClass("show");
+        $('#'+tabId).addClass("active");
+
+        $(this).tab("show");
+        //$(this).tab("active");
+        //$('#'+tabId).addClass("active");
+
     });
 
     $("#image-viewer .close").click(function(){
