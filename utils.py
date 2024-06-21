@@ -24,7 +24,7 @@ def get_column_info_for_ui(uidf: pd.DataFrame) -> Tuple[Dict[str, List[Any]], Di
 
 def custom_encoder(obj: Any) -> Any:
     def handle_item(item: Any) -> Any:
-        if isinstance(item, (float, int, np.float128)):
+        if isinstance(item, (float, int,np.float64)):
             # Convert float, int, or float128 to string with a fixed number of decimal places
             return round(float(item), 2)
         elif isinstance(item, np.int64):

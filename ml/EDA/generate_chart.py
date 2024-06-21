@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -113,9 +115,9 @@ Tuple[str, pd.DataFrame]:
     FinalDataFrame.sort_values(by=[column_mean], ascending=False, inplace=True)
 
     FinalDataFrame[column_mean].fillna(0, inplace=True)
-    FinalDataFrame[column_mean] = FinalDataFrame[column_mean].astype(np.float128)
+    FinalDataFrame[column_mean] = FinalDataFrame[column_mean].astype(np.float64)
 
-    FinalDataFrame[tar_percentage] = FinalDataFrame[tar_percentage].astype(np.float128)
+    FinalDataFrame[tar_percentage] = FinalDataFrame[tar_percentage].astype(np.float64)
     #     FinalDataFrame.sort_values(by=[tar_percentage],ascending=False,inplace=True)
 
     for acl in additional_columns:
@@ -123,7 +125,7 @@ Tuple[str, pd.DataFrame]:
         ad_sum = acl + 'sum'
         ad_count = acl + 'count'
         FinalDataFrame[ad_per] = FinalDataFrame[ad_sum] / FinalDataFrame[ad_count] * 100
-        FinalDataFrame[ad_per] = FinalDataFrame[ad_per].astype(np.float128)
+        FinalDataFrame[ad_per] = FinalDataFrame[ad_per].astype(np.float64)
 
     FinalDataFrame.rename(columns={target_sum: target + ' total', target_count: 'Total Records'}, inplace=True)
     FinalDataFrame.sort_values(by=[tar_percentage], ascending=False, inplace=True)
