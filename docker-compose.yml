@@ -21,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.nginx
+#      target: nginx-stage
     container_name: nginx
     restart: always
     ports:

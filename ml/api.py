@@ -60,4 +60,4 @@ def model_test_with_user_input() -> str:
 
         score, risk_cat = predict_score(request_json,selectedcriteria,model_full_path)
 
-        return json.dumps({"score":score, "risk_cat":risk_cat},default=custom_encoder)
+        return json.dumps({"score":round(score,2), "risk_cat":risk_cat},default=custom_encoder)

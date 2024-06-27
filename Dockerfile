@@ -1,31 +1,53 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
+# Stage 1: Base dependencies
+FROM ubuntu:20.04 AS base
+
+# Set environment variables
+ENV TZ=UTC
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install base system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python3.10 \
+        python3-pip \
+        python3-dev \
+        build-essential \
+        libpq-dev \
+        libffi-dev \
+        libssl-dev \
+        tzdata \
+        gcc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Stage 2: Nginx (cached)
+FROM base AS nginx-stage
+
+RUN apt-get update
+RUN apt-get install -y nginx
+
+# Set the timezone (optional, adjust according to your needs)
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Copy Nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Stage 3: Application (no cache)
+FROM nginx-stage AS app-stage
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy and install Python dependencies
+COPY requirements_.txt requirements_.txt
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements_.txt
 
-# RUN sed -i 's|http://deb.debian.org/debian|http://ftp.us.debian.org/debian|g' /etc/apt/sources.list
+# Copy the Flask app code into the container
+COPY . .
 
-# Install build tools and other necessary packages
-RUN apt-get update
+# Expose the port that Flask runs on
+EXPOSE 80
 
-# Install any needed packages specified in requirements.txt
-
-RUN python -m ensurepip --upgrade
-RUN pip install --upgrade pip
-RUN pip install --upgrade setuptools
-# RUN pip install --upgrade setuptools
-# RUN apt-get install gcc
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Make port 5000 available to the world outside this container
-EXPOSE 5000
-
-# Define environment variable
-ENV FLASK_APP=run.py
-
-# Run the Flask app
-CMD ["flask", "run", "--host=0.0.0.0"]
+# Start Nginx and Flask
+CMD  nginx -g "daemon off;" & python3 /app/run.py
